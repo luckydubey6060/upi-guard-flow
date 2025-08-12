@@ -1,6 +1,7 @@
 import React, { useRef, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 import { useML } from "@/context/MLContext";
 
 const Index: React.FC = () => {
@@ -35,13 +36,13 @@ const Index: React.FC = () => {
 
         <div className="flex items-center justify-center gap-3 flex-wrap">
           <Button asChild variant="hero" size="lg">
-            <a href="/upload">Upload Dataset</a>
+            <Link to="/upload">Upload Dataset</Link>
           </Button>
-          <Button asChild variant="secondary" size="lg" onClick={loadSampleDataset}>
-            <a href="/train">Use Sample & Train</a>
+          <Button asChild variant="secondary" size="lg">
+            <Link to="/train" onClick={loadSampleDataset}>Use Sample & Train</Link>
           </Button>
           <Button asChild variant="outline" size="lg">
-            <a href="/predict">Try Manual Prediction</a>
+            <Link to="/predict">Try Manual Prediction</Link>
           </Button>
         </div>
 

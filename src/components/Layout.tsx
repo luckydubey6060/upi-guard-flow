@@ -1,4 +1,4 @@
-import { Link, NavLink, useLocation } from "react-router-dom";
+import { Link, NavLink, useLocation, Outlet } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import React from "react";
 
@@ -11,7 +11,7 @@ const navItems = [
   { to: "/analytics", label: "Analytics" },
 ];
 
-export default function Layout({ children }: { children: React.ReactNode }) {
+export default function Layout() {
   const location = useLocation();
   React.useEffect(() => {
     const titleMap: Record<string, string> = {
@@ -54,7 +54,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         </nav>
       </header>
       <main id="get-started" className="container mx-auto px-4 py-6 flex-1 w-full">
-        {children}
+        <Outlet />
       </main>
       <footer className="border-t py-6 text-center text-sm text-muted-foreground">
         © {new Date().getFullYear()} UPI Fraud Detection Demo

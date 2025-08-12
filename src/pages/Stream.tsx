@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 import { useML } from "@/context/MLContext";
 
 interface StreamRow {
@@ -62,7 +63,7 @@ const StreamPage: React.FC = () => {
           </CardHeader>
           <CardContent className="flex gap-2">
             <Button variant="hero" asChild>
-              <a href="/train">Train Model</a>
+              <Link to="/train">Train Model</Link>
             </Button>
             <Button variant="secondary" onClick={loadSampleDataset}>Load Sample Dataset</Button>
           </CardContent>

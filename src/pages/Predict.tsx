@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 import { useML } from "@/context/MLContext";
 
 const PredictPage: React.FC = () => {
@@ -48,7 +49,7 @@ const PredictPage: React.FC = () => {
           </CardHeader>
           <CardContent className="flex gap-2">
             <Button variant="hero" asChild>
-              <a href="/train">Go to Training</a>
+              <Link to="/train">Go to Training</Link>
             </Button>
             <Button variant="secondary" onClick={loadSampleDataset}>Load Sample</Button>
           </CardContent>

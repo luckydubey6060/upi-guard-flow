@@ -22,18 +22,18 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <MLProvider>
-          <Layout>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/upload" element={<Upload />} />
-              <Route path="/train" element={<Train />} />
-              <Route path="/predict" element={<Predict />} />
-              <Route path="/stream" element={<Stream />} />
-              <Route path="/analytics" element={<Analytics />} />
+          <Routes>
+            <Route element={<Layout />}>
+              <Route index element={<Index />} />
+              <Route path="upload" element={<Upload />} />
+              <Route path="train" element={<Train />} />
+              <Route path="predict" element={<Predict />} />
+              <Route path="stream" element={<Stream />} />
+              <Route path="analytics" element={<Analytics />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Layout>
+            </Route>
+          </Routes>
         </MLProvider>
       </BrowserRouter>
     </TooltipProvider>
