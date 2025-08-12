@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Routes, Route } from "react-router-dom";
 import Layout from "@/components/Layout";
+import RequireAuth from "@/components/RequireAuth";
 import Index from "./pages/Index";
 import Upload from "./pages/Upload";
 import Train from "./pages/Train";
@@ -11,6 +12,7 @@ import Predict from "./pages/Predict";
 import Stream from "./pages/Stream";
 import Analytics from "./pages/Analytics";
 import NotFound from "./pages/NotFound";
+import Auth from "./pages/Auth";
 import { MLProvider } from "@/context/MLContext";
 
 const queryClient = new QueryClient();
@@ -20,7 +22,8 @@ const App = () => (
     <TooltipProvider>
         <MLProvider>
           <Routes>
-            <Route element={<Layout />}>
+            <Route path="/auth" element={<Auth />} />
+            <Route element={<RequireAuth><Layout /></RequireAuth>}>
               <Route index element={<Index />} />
               <Route path="upload" element={<Upload />} />
               <Route path="train" element={<Train />} />

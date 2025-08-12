@@ -1,6 +1,7 @@
 import { Link, NavLink, useLocation, Outlet } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import React from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 const navItems = [
   { to: "/", label: "Home" },
@@ -13,6 +14,8 @@ const navItems = [
 
 export default function Layout() {
   const location = useLocation();
+  const [authed, setAuthed] = React.useState(false);
+
   React.useEffect(() => {
     const titleMap: Record<string, string> = {
       "/": "UPI Fraud Detection | Home",
@@ -26,6 +29,14 @@ export default function Layout() {
     const meta = document.querySelector('meta[name="description"]');
     if (meta) meta.setAttribute("content", "Interactive UPI fraud detection dashboard with dataset upload, in-browser model training, live predictions, and analytics.");
   }, [location.pathname]);
+
+  React.useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setAuthed(!!session);
+    });
+    supabase.auth.getSession().then(({ data }) => setAuthed(!!data.session));
+    return () => subscription.unsubscribe();
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -46,10 +57,19 @@ export default function Layout() {
             ))}
             <a href="#get-started" className="sr-only">Skip to content</a>
           </div>
-          <div className="hidden sm:block">
+          <div className="hidden sm:flex items-center gap-2">
             <Button asChild variant="hero" size="sm">
               <Link to="/upload">Get Started</Link>
             </Button>
+            {authed ? (
+              <Button size="sm" variant="outline" onClick={async () => { await supabase.auth.signOut(); }}>
+                Logout
+              </Button>
+            ) : (
+              <Button asChild size="sm" variant="outline">
+                <Link to="/auth">Login</Link>
+              </Button>
+            )}
           </div>
         </nav>
       </header>
