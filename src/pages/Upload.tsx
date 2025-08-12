@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useML } from "@/context/MLContext";
 
 const UploadPage: React.FC = () => {
-  const { setDatasetFromCSV, preview, loadSampleDataset } = useML();
+  const { setDatasetFromCSV, dataset, loadSampleDataset } = useML();
   const inputRef = useRef<HTMLInputElement>(null);
   const [fileName, setFileName] = useState<string>("");
 
@@ -50,8 +50,8 @@ const UploadPage: React.FC = () => {
 
         <Card>
           <CardHeader>
-            <CardTitle>Preview (first 10 rows)</CardTitle>
-            <CardDescription>Quick glance at your data</CardDescription>
+            <CardTitle>Dataset (all rows)</CardTitle>
+            <CardDescription>Viewing all rows</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="overflow-auto max-h-[360px]">
@@ -64,7 +64,7 @@ const UploadPage: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {preview.map((row, i) => (
+                  {dataset.map((row, i) => (
                     <tr key={i} className="border-b last:border-b-0">
                       <td className="py-2 pr-4">{row.TransactionID}</td>
                       <td className="py-2 pr-4">{row.UserID}</td>
