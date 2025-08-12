@@ -13,6 +13,7 @@ const AuthPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
     document.title = "Login | UPI Fraud Detection";
@@ -59,6 +60,7 @@ const AuthPage: React.FC = () => {
         },
       });
       if (error) throw error;
+      setMessage("Verification email sent! Please check your inbox.");
       toast.success("Signup successful. Check your email to confirm.");
     } catch (err: any) {
       toast.error(err.message || "Sign up failed");
@@ -103,6 +105,9 @@ const AuthPage: React.FC = () => {
                 <Input id="password2" type="password" placeholder="Create a password" value={password} onChange={(e) => setPassword(e.target.value)} />
               </div>
               <Button onClick={handleSignup} disabled={loading} className="w-full">{loading ? "Please wait..." : "Create account"}</Button>
+
+              {/* ✅ Show verification message */}
+              {message && <p className="text-green-600 text-sm mt-2">{message}</p>}
             </TabsContent>
           </Tabs>
         </CardContent>
