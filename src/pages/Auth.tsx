@@ -70,48 +70,129 @@ const AuthPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-md mx-auto">
-      <Card>
-        <CardHeader>
-          <CardTitle>Welcome back</CardTitle>
-          <CardDescription>Log in or create an account to continue.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Tabs defaultValue="login" className="w-full">
-            <TabsList className="grid grid-cols-2 w-full">
-              <TabsTrigger value="login">Login</TabsTrigger>
-              <TabsTrigger value="signup">Sign Up</TabsTrigger>
-            </TabsList>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted/20 p-4">
+      <div className="w-full max-w-md">
+        <div className="text-center mb-8">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-primary to-primary-variant flex items-center justify-center shadow-lg">
+            <span className="text-2xl">🛡️</span>
+          </div>
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary-variant bg-clip-text text-transparent mb-2">
+            UPI Fraud Detection
+          </h1>
+          <p className="text-muted-foreground">Advanced AI-powered fraud protection</p>
+        </div>
 
-            <TabsContent value="login" className="space-y-4 pt-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input id="password" type="password" placeholder="Your password" value={password} onChange={(e) => setPassword(e.target.value)} />
-              </div>
-              <Button onClick={handleLogin} disabled={loading} className="w-full">{loading ? "Please wait..." : "Login"}</Button>
-            </TabsContent>
+        <Card className="surface-elevated border-0">
+          <CardHeader className="text-center pb-6">
+            <CardTitle className="text-2xl">Welcome</CardTitle>
+            <CardDescription>Secure your transactions with AI-powered protection</CardDescription>
+          </CardHeader>
+          <CardContent className="p-8">
+            <Tabs defaultValue="login" className="w-full">
+              <TabsList className="grid grid-cols-2 w-full h-12 p-1 bg-muted/50">
+                <TabsTrigger value="login" className="h-10 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+                  Login
+                </TabsTrigger>
+                <TabsTrigger value="signup" className="h-10 data-[state=active]:bg-background data-[state=active]:shadow-sm">
+                  Sign Up
+                </TabsTrigger>
+              </TabsList>
 
-            <TabsContent value="signup" className="space-y-4 pt-4">
-              <div className="space-y-2">
-                <Label htmlFor="email2">Email</Label>
-                <Input id="email2" type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="password2">Password</Label>
-                <Input id="password2" type="password" placeholder="Create a password" value={password} onChange={(e) => setPassword(e.target.value)} />
-              </div>
-              <Button onClick={handleSignup} disabled={loading} className="w-full">{loading ? "Please wait..." : "Create account"}</Button>
+              <TabsContent value="login" className="space-y-6 pt-6">
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="email" className="text-sm font-medium">Email Address</Label>
+                    <Input 
+                      id="email" 
+                      type="email" 
+                      placeholder="Enter your email" 
+                      value={email} 
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="h-12 bg-background border-border focus:ring-2 focus:ring-primary/20"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="password" className="text-sm font-medium">Password</Label>
+                    <Input 
+                      id="password" 
+                      type="password" 
+                      placeholder="Enter your password" 
+                      value={password} 
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="h-12 bg-background border-border focus:ring-2 focus:ring-primary/20"
+                    />
+                  </div>
+                </div>
+                <Button 
+                  onClick={handleLogin} 
+                  disabled={loading} 
+                  className="w-full h-12 btn-hero font-semibold"
+                >
+                  {loading ? (
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                      Signing in...
+                    </div>
+                  ) : (
+                    "Sign In"
+                  )}
+                </Button>
+              </TabsContent>
 
-              {/* ✅ Show verification message */}
-              {message && <p className="text-green-600 text-sm mt-2">{message}</p>}
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
+              <TabsContent value="signup" className="space-y-6 pt-6">
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="email2" className="text-sm font-medium">Email Address</Label>
+                    <Input 
+                      id="email2" 
+                      type="email" 
+                      placeholder="Enter your email" 
+                      value={email} 
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="h-12 bg-background border-border focus:ring-2 focus:ring-primary/20"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="password2" className="text-sm font-medium">Password</Label>
+                    <Input 
+                      id="password2" 
+                      type="password" 
+                      placeholder="Create a strong password" 
+                      value={password} 
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="h-12 bg-background border-border focus:ring-2 focus:ring-primary/20"
+                    />
+                  </div>
+                </div>
+                
+                <Button 
+                  onClick={handleSignup} 
+                  disabled={loading} 
+                  className="w-full h-12 btn-hero font-semibold"
+                >
+                  {loading ? (
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                      Creating account...
+                    </div>
+                  ) : (
+                    "Create Account"
+                  )}
+                </Button>
+
+                {message && (
+                  <div className="bg-success/10 border border-success/20 rounded-lg p-4 text-center">
+                    <div className="flex items-center justify-center gap-2 text-success">
+                      <span className="text-lg">✉️</span>
+                      <p className="text-sm font-medium">{message}</p>
+                    </div>
+                  </div>
+                )}
+              </TabsContent>
+            </Tabs>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };
