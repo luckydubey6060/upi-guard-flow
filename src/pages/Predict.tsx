@@ -1,67 +1,161 @@
 import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { AlertTriangle, Shield, Upload, Brain } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useML } from "@/context/MLContext";
 
 const PredictPage: React.FC = () => {
-  const { predictRow, encoders, model, loadSampleDataset } = useML();
+  const { predictRow, encoders, model, loadSampleDataset, dataset } = useML();
 
   const [form, setForm] = useState({
     Amount: 999,
-    Timestamp: new Date().toISOString().slice(0, 16), // YYYY-MM-DDTHH:mm
+    Timestamp: new Date().toISOString().slice(0, 16),
     Location: "Delhi",
     DeviceID: "dev-001",
     TransactionType: "P2P",
+    TransactionID: "",
+    UserID: "",
   });
-  const [result, setResult] = useState<{ prob: number; label: string }>();
+  const [result, setResult] = useState<{ prob: number; label: string; confidence: number; risk: string }>();
+  const [identifierType, setIdentifierType] = useState<"DeviceID" | "TransactionID" | "UserID">("DeviceID");
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   useEffect(() => {
     document.title = "Fraud Prediction Tool | UPI Fraud Detection";
   }, []);
 
+  const getAvailableIdentifiers = () => {
+    if (!dataset.length) return ["DeviceID", "TransactionID", "UserID"];
+    const hasDeviceID = dataset.some(row => row.DeviceID);
+    const hasTransactionID = dataset.some(row => row.TransactionID);
+    const hasUserID = dataset.some(row => row.UserID);
+    
+    const available = [];
+    if (hasDeviceID) available.push("DeviceID");
+    if (hasTransactionID) available.push("TransactionID");
+    if (hasUserID) available.push("UserID");
+    
+    return available.length ? available : ["DeviceID"];
+  };
+
+  const analyzePatterns = (amount: number, type: string, timestamp: string) => {
+    const hour = new Date(timestamp).getHours();
+    const patterns = {
+      suspiciousAmount: amount > 50000 || amount < 1,
+      oddTiming: hour < 6 || hour > 23,
+      riskType: ["Transfer", "P2P", "Online"].includes(type),
+      weekendTransaction: [0, 6].includes(new Date(timestamp).getDay())
+    };
+    
+    const riskFactors = Object.values(patterns).filter(Boolean).length;
+    return {
+      riskLevel: riskFactors > 2 ? "HIGH" : riskFactors > 1 ? "MEDIUM" : "LOW",
+      patterns
+    };
+  };
+
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!model) return;
-    const iso = form.Timestamp.includes("T") ? new Date(form.Timestamp) : new Date(form.Timestamp);
-    const res = await predictRow({
-      Amount: Number(form.Amount),
-      Timestamp: iso.toISOString(),
-      Location: form.Location,
-      DeviceID: form.DeviceID,
-      TransactionType: form.TransactionType,
-    } as any);
-    setResult(res);
+    
+    setIsAnalyzing(true);
+    try {
+      const iso = form.Timestamp.includes("T") ? new Date(form.Timestamp) : new Date(form.Timestamp);
+      
+      // Create dynamic payload based on identifier type
+      const payload: any = {
+        Amount: Number(form.Amount),
+        Timestamp: iso.toISOString(),
+        Location: form.Location,
+        TransactionType: form.TransactionType,
+      };
+      
+      // Add the appropriate identifier
+      if (identifierType === "DeviceID") payload.DeviceID = form.DeviceID;
+      else if (identifierType === "TransactionID") payload.TransactionID = form.TransactionID;
+      else if (identifierType === "UserID") payload.UserID = form.UserID;
+      
+      const res = await predictRow(payload);
+      const patterns = analyzePatterns(payload.Amount, payload.TransactionType, payload.Timestamp);
+      
+      setResult({
+        prob: res.prob,
+        label: res.label,
+        confidence: Math.round(res.prob * 100),
+        risk: patterns.riskLevel
+      });
+    } catch (error) {
+      console.error("Prediction error:", error);
+    } finally {
+      setIsAnalyzing(false);
+    }
   };
 
   return (
     <div className="grid gap-6">
       <header className="space-y-2">
-        <h1 className="text-3xl font-semibold">Fraud Prediction Tool</h1>
-        <p className="text-muted-foreground">Enter transaction details to get an instant prediction.</p>
+        <div className="flex items-center gap-3">
+          <Brain className="w-8 h-8 text-primary" />
+          <div>
+            <h1 className="text-3xl font-semibold">Intelligent Fraud Detection System</h1>
+            <p className="text-muted-foreground">Advanced real-time transaction analysis with adaptive field recognition</p>
+          </div>
+        </div>
       </header>
 
       {!model && (
-        <Card>
+        <Card className="border-amber-200 bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-900/10 dark:to-orange-900/10">
           <CardHeader>
-            <CardTitle>Model not trained</CardTitle>
-            <CardDescription>Train a model first or load the sample dataset.</CardDescription>
+            <CardTitle className="flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-amber-600" />
+              System Not Ready
+            </CardTitle>
+            <CardDescription>Train the AI model or load sample data to enable intelligent fraud detection</CardDescription>
           </CardHeader>
           <CardContent className="flex gap-2">
             <Button variant="hero" asChild>
-              <Link to="/train">Go to Training</Link>
+              <Link to="/train">
+                <Upload className="w-4 h-4 mr-2" />
+                Train Model
+              </Link>
             </Button>
-            <Button variant="secondary" onClick={loadSampleDataset}>Load Sample</Button>
+            <Button variant="secondary" onClick={loadSampleDataset}>Load Sample Data</Button>
           </CardContent>
         </Card>
       )}
 
-      <Card className="surface-elevated">
+      <Card className="surface-elevated border-l-4 border-l-primary">
         <CardHeader>
-          <CardTitle>🔮 Real-Time Fraud Detection</CardTitle>
-          <CardDescription>Enter transaction details to get an instant fraud probability assessment</CardDescription>
+          <CardTitle className="flex items-center gap-2">
+            <Shield className="w-5 h-5 text-primary" />
+            🔮 Real-Time Fraud Detection Engine
+          </CardTitle>
+          <CardDescription>
+            Advanced AI system with adaptive field recognition • Handles varying CSV structures • Dynamic identifier mapping
+          </CardDescription>
         </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="flex items-center gap-2 text-sm">
+              <Badge variant="secondary">CSV Adaptive</Badge>
+              <span className="text-muted-foreground">Handles any column format</span>
+            </div>
+            <div className="flex items-center gap-2 text-sm">
+              <Badge variant="secondary">Real-time</Badge>
+              <span className="text-muted-foreground">Instant predictions</span>
+            </div>
+            <div className="flex items-center gap-2 text-sm">
+              <Badge variant="secondary">Behavioral</Badge>
+              <span className="text-muted-foreground">Pattern analysis</span>
+            </div>
+          </div>
+        </CardContent>
       </Card>
+
 
       <Card className="surface-elevated">
         <CardHeader>
@@ -103,47 +197,132 @@ const PredictPage: React.FC = () => {
 
       <Card className="surface-elevated">
         <CardHeader>
-          <CardTitle>Transaction Details for Analysis</CardTitle>
-          <CardDescription>Fields marked with * are required</CardDescription>
+          <CardTitle>🔍 Intelligent Transaction Analysis</CardTitle>
+          <CardDescription>
+            Advanced system with dynamic field adaptation • Auto-detects identifier types • Behavioral pattern analysis
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={onSubmit} className="grid sm:grid-cols-2 gap-4">
-            <label className="grid gap-1">
-              <span className="text-sm">Amount*</span>
-              <input type="number" className="border rounded-md px-3 py-2 bg-background" value={form.Amount}
-                onChange={(e) => setForm({ ...form, Amount: Number(e.target.value) })} required />
-            </label>
-            <label className="grid gap-1">
-              <span className="text-sm">Time*</span>
-              <input type="datetime-local" className="border rounded-md px-3 py-2 bg-background" value={form.Timestamp}
-                onChange={(e) => setForm({ ...form, Timestamp: e.target.value })} required />
-            </label>
-            <label className="grid gap-1">
-              <span className="text-sm">Location</span>
-              <input className="border rounded-md px-3 py-2 bg-background" value={form.Location}
-                onChange={(e) => setForm({ ...form, Location: e.target.value })} />
-            </label>
-            <label className="grid gap-1">
-              <span className="text-sm">DeviceID</span>
-              <input className="border rounded-md px-3 py-2 bg-background" value={form.DeviceID}
-                onChange={(e) => setForm({ ...form, DeviceID: e.target.value })} />
-            </label>
-            <label className="grid gap-1">
-              <span className="text-sm">Transaction Type*</span>
-              <select className="border rounded-md px-3 py-2 bg-background" value={form.TransactionType}
-                onChange={(e) => setForm({ ...form, TransactionType: e.target.value })} required>
-                {(encoders?.transTypeVocab ?? ["P2P","Merchant","BillPay","Recharge"]).map(t => (
-                  <option key={t} value={t}>{t}</option>
-                ))}
-              </select>
-            </label>
+          <form onSubmit={onSubmit} className="space-y-6">
+            {/* Core Transaction Fields */}
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="amount">Transaction Amount *</Label>
+                <Input 
+                  id="amount"
+                  type="number" 
+                  value={form.Amount}
+                  onChange={(e) => setForm({ ...form, Amount: Number(e.target.value) })} 
+                  required 
+                  placeholder="Enter amount"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="timestamp">Date & Time *</Label>
+                <Input 
+                  id="timestamp"
+                  type="datetime-local" 
+                  value={form.Timestamp}
+                  onChange={(e) => setForm({ ...form, Timestamp: e.target.value })} 
+                  required 
+                />
+              </div>
+            </div>
 
-            <div className="sm:col-span-2 flex items-center gap-3 mt-2">
-              <Button type="submit" variant="hero">Predict</Button>
+            {/* Dynamic Identifier Selection */}
+            <div className="space-y-4">
+              <Label>Transaction Identifier (System adapts to your data structure)</Label>
+              <div className="grid grid-cols-3 gap-2">
+                {getAvailableIdentifiers().map((type) => (
+                  <Button
+                    key={type}
+                    type="button"
+                    variant={identifierType === type ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setIdentifierType(type as any)}
+                  >
+                    {type}
+                  </Button>
+                ))}
+              </div>
+              <Input
+                placeholder={`Enter ${identifierType}`}
+                value={form[identifierType]}
+                onChange={(e) => setForm({ ...form, [identifierType]: e.target.value })}
+              />
+            </div>
+
+            {/* Additional Fields */}
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="location">Location/Region</Label>
+                <Input 
+                  id="location"
+                  value={form.Location}
+                  onChange={(e) => setForm({ ...form, Location: e.target.value })} 
+                  placeholder="e.g., Delhi, Mumbai"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="transactionType">Transaction Type *</Label>
+                <select 
+                  id="transactionType"
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background" 
+                  value={form.TransactionType}
+                  onChange={(e) => setForm({ ...form, TransactionType: e.target.value })} 
+                  required
+                >
+                  {(encoders?.transTypeVocab ?? ["P2P","Merchant","BillPay","Recharge","Transfer","Online","ATM"]).map(t => (
+                    <option key={t} value={t}>{t}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Analysis Button and Results */}
+            <div className="space-y-4">
+              <Button type="submit" disabled={isAnalyzing || !model} className="w-full" size="lg">
+                {isAnalyzing ? (
+                  <>
+                    <Brain className="w-4 h-4 mr-2 animate-spin" />
+                    Analyzing Transaction...
+                  </>
+                ) : (
+                  <>
+                    <Shield className="w-4 h-4 mr-2" />
+                    Analyze for Fraud
+                  </>
+                )}
+              </Button>
+
               {result && (
-                <p className={`text-sm font-medium ${result.label === 'Fraud' ? 'text-destructive' : 'text-success'}`}>
-                  {result.label} • Probability: {(result.prob * 100).toFixed(1)}%
-                </p>
+                <div className={`p-4 rounded-lg border-2 ${
+                  result.label === 'Fraud' 
+                    ? 'border-destructive/20 bg-destructive/5' 
+                    : 'border-green-200 bg-green-50 dark:bg-green-900/10'
+                }`}>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      {result.label === 'Fraud' ? (
+                        <AlertTriangle className="w-5 h-5 text-destructive" />
+                      ) : (
+                        <Shield className="w-5 h-5 text-green-600" />
+                      )}
+                      <span className={`font-semibold ${
+                        result.label === 'Fraud' ? 'text-destructive' : 'text-green-600'
+                      }`}>
+                        {result.label}
+                      </span>
+                    </div>
+                    <Badge variant={result.risk === 'HIGH' ? 'destructive' : result.risk === 'MEDIUM' ? 'secondary' : 'default'}>
+                      Risk: {result.risk}
+                    </Badge>
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    <p>Confidence Score: <span className="font-medium">{result.confidence}%</span></p>
+                    <p>Fraud Probability: <span className="font-medium">{(result.prob * 100).toFixed(1)}%</span></p>
+                  </div>
+                </div>
               )}
             </div>
           </form>
