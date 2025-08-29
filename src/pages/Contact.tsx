@@ -169,6 +169,108 @@ const Contact = () => {
             </Card>
           </div>
         </div>
+
+        {/* FAQ Section */}
+        <div className="mt-16 max-w-4xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-heading bg-gradient-text bg-clip-text text-transparent mb-4">
+              Frequently Asked Questions
+            </h2>
+            <p className="text-lg text-muted-foreground">
+              Find answers to common questions about our fraud detection system
+            </p>
+          </div>
+
+          <div className="grid gap-6">
+            <Card className="surface-elevated border-0">
+              <CardHeader>
+                <CardTitle className="text-lg">How do I get started with fraud detection?</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">
+                  Simply upload your CSV dataset or use our sample data, train the model, and start making predictions. The entire process takes just a few minutes and works directly in your browser.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="surface-elevated border-0">
+              <CardHeader>
+                <CardTitle className="text-lg">What data format do you accept?</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">
+                  We accept CSV files with columns like TransactionID, UserID, Amount, Timestamp, Location, DeviceID, TransactionType, and FraudLabel. Our system adapts to missing columns automatically.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="surface-elevated border-0">
+              <CardHeader>
+                <CardTitle className="text-lg">Is my data secure?</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">
+                  Absolutely! All processing happens locally in your browser using TensorFlow.js. No data leaves your device, ensuring complete privacy and security of your transaction information.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="surface-elevated border-0">
+              <CardHeader>
+                <CardTitle className="text-lg">How accurate is the fraud detection?</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">
+                  Our models typically achieve 85-95% accuracy depending on dataset quality. We provide detailed metrics including Precision, Recall, and F1-scores to help you evaluate performance.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="surface-elevated border-0">
+              <CardHeader>
+                <CardTitle className="text-lg">Can I use this on mobile devices?</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">
+                  Yes! Our dashboard is fully responsive and works on smartphones and tablets. You can upload data, train models, and view analytics from any device.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="surface-elevated border-0">
+              <CardHeader>
+                <CardTitle className="text-lg">Do you offer API integration?</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">
+                  Yes, we provide REST APIs for real-time transaction screening and integration with existing payment systems. Contact us for API documentation and enterprise support.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="surface-elevated border-0">
+              <CardHeader>
+                <CardTitle className="text-lg">How long does model training take?</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">
+                  Training time varies by dataset size: Small datasets (1K-10K transactions) take 30-60 seconds, medium datasets (10K-100K) take 2-5 minutes, and large datasets may take 5-15 minutes.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="surface-elevated border-0">
+              <CardHeader>
+                <CardTitle className="text-lg">Can I export my results?</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">
+                  Yes! You can export trained models, prediction results, and analytics reports. The system provides various download options for integration with your existing workflows.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </div>
     </div>
   );

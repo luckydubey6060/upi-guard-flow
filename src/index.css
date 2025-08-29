@@ -175,4 +175,20 @@ All colors MUST be HSL.
     background: hsl(var(--background) / 0.85);
     backdrop-filter: blur(2px);
   }
+
+  /* Custom fonts */
+  .font-brand {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  .font-heading {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+  }
+
+  .font-body {
+    font-family: 'Inter', sans-serif;
+  }
 }

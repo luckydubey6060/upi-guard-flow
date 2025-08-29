@@ -206,8 +206,44 @@ const ChatAssistant: React.FC = () => {
       return "The Live Stream page simulates real-time transaction monitoring. It processes your dataset to show how the system would detect fraud as transactions occur, complete with confidence scores and alerts.";
     }
     
+    if (lowerQuestion.includes('security') || lowerQuestion.includes('safe')) {
+      return "Your data is processed entirely in your browser using TensorFlow.js - no data leaves your device. All training and predictions happen locally, ensuring complete privacy and security of your transaction data.";
+    }
+    
+    if (lowerQuestion.includes('cost') || lowerQuestion.includes('price') || lowerQuestion.includes('free')) {
+      return "This is a demonstration version of our UPI fraud detection system. For enterprise pricing and deployment options, please contact our sales team through the Contact page.";
+    }
+    
+    if (lowerQuestion.includes('support') || lowerQuestion.includes('help') || lowerQuestion.includes('contact')) {
+      return "You can reach our support team through the Contact page, or continue chatting with me here! I'm available 24/7 to help with technical questions, usage guidance, and troubleshooting.";
+    }
+    
+    if (lowerQuestion.includes('api') || lowerQuestion.includes('integration')) {
+      return "Our fraud detection system can be integrated via REST APIs for real-time transaction screening. Contact us for API documentation and integration support for your existing payment systems.";
+    }
+    
+    if (lowerQuestion.includes('train') && lowerQuestion.includes('time')) {
+      return "Training time depends on your dataset size. Typically: Small datasets (1K-10K transactions) take 30-60 seconds, Medium datasets (10K-100K) take 2-5 minutes, and Large datasets (100K+) may take 5-15 minutes.";
+    }
+    
+    if (lowerQuestion.includes('mobile') || lowerQuestion.includes('phone')) {
+      return "Yes! Our dashboard is fully responsive and works on mobile devices. You can upload data, train models, and view analytics from your smartphone or tablet with the same functionality.";
+    }
+    
+    if (lowerQuestion.includes('export') || lowerQuestion.includes('download')) {
+      return "You can export your trained models and prediction results. The Analytics page provides download options for reports, and trained models can be saved for future use or deployment.";
+    }
+    
+    if (lowerQuestion.includes('language') || lowerQuestion.includes('localization')) {
+      return "Currently, our interface is available in English. We're working on multi-language support for global deployment. The system can process transaction data in any format regardless of region.";
+    }
+    
+    if (lowerQuestion.includes('performance') || lowerQuestion.includes('speed')) {
+      return "Our browser-based ML implementation is optimized for performance. Prediction speed is typically under 100ms per transaction, making it suitable for real-time fraud detection in high-volume environments.";
+    }
+    
     // Default helpful response
-    return "I'm here to help with any questions about the UPI Fraud Detection Dashboard! You can ask about uploading data, training models, making predictions, or understanding the analytics. What would you like to know more about?";
+    return "I'm here to help with any questions about the UPI Fraud Detection Dashboard! You can ask about uploading data, training models, making predictions, understanding analytics, security, pricing, mobile usage, API integration, or anything else. What would you like to know more about?";
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {

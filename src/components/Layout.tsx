@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import React from "react";
 import { supabase } from "@/integrations/supabase/client";
 import ChatAssistant from "@/components/ChatAssistant";
+import logo from "@/assets/logo.png";
 
 const navItems = [
   { to: "/", label: "Home" },
@@ -45,9 +46,11 @@ export default function Layout() {
     <div className="min-h-screen flex flex-col bg-lavender-subtle">
       <header className="sticky top-0 z-40 border-b bg-background/90 backdrop-blur">
         <nav className="container mx-auto px-4 py-3 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 focus:outline-none">
-            <div className="w-6 h-6 rounded-md" style={{ backgroundImage: 'var(--gradient-primary)' }} aria-hidden />
-            <span className="font-semibold">UPI Fraud Detection</span>
+          <Link to="/" className="flex items-center gap-3 focus:outline-none">
+            <img src={logo} alt="UPI Fraud Detection Logo" className="w-8 h-8" />
+            <span className="font-brand text-xl bg-gradient-text bg-clip-text text-transparent">
+              UPI Fraud Detection
+            </span>
           </Link>
           <div className="flex items-center gap-1 flex-wrap">
             {navItems.map((item) => (
