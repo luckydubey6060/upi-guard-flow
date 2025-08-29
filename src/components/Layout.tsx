@@ -2,6 +2,7 @@ import { Link, NavLink, useLocation, Outlet } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import React from "react";
 import { supabase } from "@/integrations/supabase/client";
+import ChatAssistant from "@/components/ChatAssistant";
 
 const navItems = [
   { to: "/", label: "Home" },
@@ -83,6 +84,8 @@ export default function Layout() {
       <footer className="border-t py-6 text-center text-sm text-muted-foreground">
         © {new Date().getFullYear()} UPI Fraud Detection Demo
       </footer>
+      
+      <ChatAssistant />
     </div>
   );
 }

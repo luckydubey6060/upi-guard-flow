@@ -3,10 +3,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { useML } from "@/context/MLContext";
+import UserGuideOverlay from "@/components/UserGuideOverlay";
+import { HelpCircle } from "lucide-react";
 
 const Index: React.FC = () => {
   const { loadSampleDataset } = useML();
   const [pos, setPos] = useState({ x: 50, y: 50 });
+  const [isGuideOpen, setIsGuideOpen] = useState(false);
   const areaRef = useRef<HTMLDivElement>(null);
 
   const onMove = (e: React.MouseEvent) => {
@@ -46,6 +49,19 @@ const Index: React.FC = () => {
           </Button>
         </div>
 
+        {/* Need More Info Section */}
+        <div className="mt-6">
+          <Button
+            onClick={() => setIsGuideOpen(true)}
+            variant="outline"
+            size="lg"
+            className="bg-background/20 backdrop-blur-sm border-primary/30 hover:bg-background/30"
+          >
+            <HelpCircle className="h-4 w-4 mr-2" />
+            Need More Info?
+          </Button>
+        </div>
+
         <section className="grid sm:grid-cols-3 gap-4 text-left mt-6">
           <Card className="hover:shadow-md transition-shadow">
             <CardHeader>
@@ -67,6 +83,8 @@ const Index: React.FC = () => {
           </Card>
         </section>
       </div>
+      
+      <UserGuideOverlay isOpen={isGuideOpen} onClose={() => setIsGuideOpen(false)} />
     </div>
   );
 };
