@@ -41,8 +41,8 @@ export default function Layout() {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur">
+    <div className="min-h-screen flex flex-col bg-lavender-subtle">
+      <header className="sticky top-0 z-40 border-b bg-background/90 backdrop-blur">
         <nav className="container mx-auto px-4 py-3 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2 focus:outline-none">
             <div className="w-6 h-6 rounded-md" style={{ backgroundImage: 'var(--gradient-primary)' }} aria-hidden />
@@ -76,7 +76,9 @@ export default function Layout() {
         </nav>
       </header>
       <main id="get-started" className="container mx-auto px-4 py-6 flex-1 w-full">
-        <Outlet />
+        <div className="content-overlay rounded-lg p-1">
+          <Outlet />
+        </div>
       </main>
       <footer className="border-t py-6 text-center text-sm text-muted-foreground">
         © {new Date().getFullYear()} UPI Fraud Detection Demo

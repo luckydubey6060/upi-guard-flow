@@ -18,13 +18,13 @@ const Index: React.FC = () => {
   };
 
   return (
-    <div className="relative overflow-hidden rounded-lg border surface-elevated">
+    <div className="relative overflow-hidden rounded-lg border bg-lavender-full">
       <div
         ref={areaRef}
         onMouseMove={onMove}
-        className="relative px-6 py-16 sm:px-12 sm:py-20 grid gap-8 text-center"
+        className="relative px-6 py-16 sm:px-12 sm:py-20 grid gap-8 text-center content-overlay"
         style={{
-          background: `radial-gradient(600px circle at ${pos.x}% ${pos.y}%, hsl(var(--primary) / 0.15), transparent 60%)`,
+          background: `radial-gradient(600px circle at ${pos.x}% ${pos.y}%, hsl(var(--primary) / 0.1), hsl(var(--background) / 0.85) 60%)`,
         }}
       >
         <header>

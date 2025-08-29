@@ -154,4 +154,25 @@ All colors MUST be HSL.
   .bg-gradient-accent {
     background: var(--gradient-accent);
   }
+
+  .bg-lavender-full {
+    background-image: url('/src/assets/lavender-watercolor-full.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+  }
+
+  .bg-lavender-subtle {
+    background-image: url('/src/assets/lavender-watercolor-subtle.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+  }
+
+  .content-overlay {
+    background: hsl(var(--background) / 0.85);
+    backdrop-filter: blur(2px);
+  }
 }
