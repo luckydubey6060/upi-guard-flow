@@ -11,6 +11,7 @@ import Train from "./pages/Train";
 import Predict from "./pages/Predict";
 import Stream from "./pages/Stream";
 import Analytics from "./pages/Analytics";
+import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
 import { MLProvider } from "@/context/MLContext";
@@ -30,6 +31,7 @@ const App = () => (
               <Route path="predict" element={<Predict />} />
               <Route path="stream" element={<Stream />} />
               <Route path="analytics" element={<Analytics />} />
+              <Route path="contact" element={<Contact />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Route>

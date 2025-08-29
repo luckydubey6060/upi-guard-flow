@@ -10,6 +10,7 @@ const navItems = [
   { to: "/predict", label: "Predict" },
   { to: "/stream", label: "Live Stream" },
   { to: "/analytics", label: "Analytics" },
+  { to: "/contact", label: "Contact" },
 ];
 
 export default function Layout() {
@@ -24,6 +25,7 @@ export default function Layout() {
       "/predict": "Fraud Prediction Tool | UPI Fraud Detection",
       "/stream": "Real-Time Stream | UPI Fraud Detection",
       "/analytics": "Analytics Dashboard | UPI Fraud Detection",
+      "/contact": "Contact Us | UPI Fraud Detection",
     };
     document.title = titleMap[location.pathname] || "UPI Fraud Detection";
     const meta = document.querySelector('meta[name="description"]');
