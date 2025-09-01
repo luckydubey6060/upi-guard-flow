@@ -16,25 +16,29 @@ const UserGuideOverlay: React.FC<UserGuideOverlayProps> = ({ isOpen, onClose }) 
       icon: Upload,
       title: "Upload Dataset",
       description: "Upload your CSV file with transaction data or use our sample dataset to get started instantly.",
-      details: "Supports columns: TransactionID, UserID, Amount, Timestamp, Location, DeviceID, TransactionType, FraudLabel"
+      details: "Supports columns: TransactionID, UserID, Amount, Timestamp, Location, DeviceID, TransactionType, FraudLabel",
+      color: "text-blue-600"
     },
     {
       icon: Brain,
-      title: "Train Model",
-      description: "Our AI trains a logistic regression model directly in your browser using TensorFlow.js.",
-      details: "View real-time metrics: Accuracy, Precision, Recall, F1-score"
+      title: "Train Advanced Models",
+      description: "Choose between Logistic Regression and Random Forest models, both running directly in your browser using TensorFlow.js.",
+      details: "View comprehensive metrics: Accuracy, Precision, Recall, F1-score, with model comparison",
+      color: "text-green-600"
     },
     {
       icon: Target,
       title: "Make Predictions",
-      description: "Test individual transactions or analyze patterns to detect potential fraud.",
-      details: "Get confidence scores and detailed fraud risk analysis"
+      description: "Test individual transactions with explainable AI features and analyze patterns to detect potential fraud.",
+      details: "Get confidence scores, detailed fraud risk analysis, and explanations for predictions",
+      color: "text-orange-600"
     },
     {
       icon: TrendingUp,
-      title: "Monitor Analytics",
-      description: "View live transaction streams and comprehensive analytics dashboards.",
-      details: "Real-time fraud detection with visual insights"
+      title: "Monitor & Analyze",
+      description: "View live transaction streams, comprehensive analytics dashboards, and anomaly detection results.",
+      details: "Real-time fraud detection with interactive charts, alerts, and visual insights",
+      color: "text-purple-600"
     }
   ];
 
@@ -55,18 +59,18 @@ const UserGuideOverlay: React.FC<UserGuideOverlayProps> = ({ isOpen, onClose }) 
           
           <div className="grid md:grid-cols-2 gap-6">
             {steps.map((step, index) => (
-              <Card key={index} className="relative overflow-hidden">
-                <div className="absolute top-2 right-2 w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-bold">
+              <Card key={index} className="relative overflow-hidden surface-elevated hover:shadow-xl transition-all duration-300 border-l-4 border-l-primary">
+                <div className="absolute top-3 right-3 w-10 h-10 bg-gradient-primary text-white rounded-full flex items-center justify-center text-sm font-bold shadow-lg">
                   {index + 1}
                 </div>
                 <CardHeader>
                   <div className="flex items-center gap-3">
-                    <div className="p-2 bg-primary/10 rounded-lg">
-                      <step.icon className="h-6 w-6 text-primary" />
+                    <div className="p-3 bg-gradient-primary rounded-xl shadow-md">
+                      <step.icon className={`h-6 w-6 text-white`} />
                     </div>
-                    <CardTitle className="text-lg">{step.title}</CardTitle>
+                    <CardTitle className="text-lg font-heading">{step.title}</CardTitle>
                   </div>
-                  <CardDescription className="text-base">
+                  <CardDescription className="text-base leading-relaxed">
                     {step.description}
                   </CardDescription>
                 </CardHeader>
@@ -79,8 +83,12 @@ const UserGuideOverlay: React.FC<UserGuideOverlayProps> = ({ isOpen, onClose }) 
             ))}
           </div>
           
-          <div className="mt-8 text-center">
-            <Button onClick={onClose} size="lg" variant="hero">
+          <div className="mt-8 text-center space-y-4">
+            <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+              <span>💡</span>
+              <span>Pro Tip: You can highlight any text on the page and click "Explain" for instant help!</span>
+            </div>
+            <Button onClick={onClose} size="lg" variant="hero" className="shadow-lg">
               Get Started Now
             </Button>
           </div>

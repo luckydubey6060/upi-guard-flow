@@ -186,7 +186,7 @@ All colors MUST be HSL.
 
   /* Custom fonts */
   .font-brand {
-    font-family: 'Poppins', sans-serif;
+    font-family: 'Playfair Display', serif;
     font-weight: 700;
     letter-spacing: -0.02em;
   }

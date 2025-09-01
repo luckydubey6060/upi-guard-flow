@@ -63,22 +63,37 @@ const Index: React.FC = () => {
         </div>
 
         <section className="grid sm:grid-cols-3 gap-4 text-left mt-6">
-          <Card className="hover:shadow-md transition-shadow">
+          <Card className="surface-elevated hover:shadow-lg transition-all duration-300 hover:scale-105">
             <CardHeader>
-              <CardTitle>Dataset Upload & Preview</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <div className="p-1.5 bg-primary/10 rounded-md">
+                  📊
+                </div>
+                Dataset Upload & Preview
+              </CardTitle>
               <CardDescription>CSV with columns: TransactionID, UserID, Amount, Timestamp, Location, DeviceID, TransactionType, FraudLabel</CardDescription>
             </CardHeader>
           </Card>
-          <Card className="hover:shadow-md transition-shadow">
+          <Card className="surface-elevated hover:shadow-lg transition-all duration-300 hover:scale-105">
             <CardHeader>
-              <CardTitle>Model Training</CardTitle>
-              <CardDescription>Logistic Regression using TensorFlow.js with metrics: Accuracy, Precision, Recall, F1</CardDescription>
+              <CardTitle className="flex items-center gap-2">
+                <div className="p-1.5 bg-primary/10 rounded-md">
+                  🧠
+                </div>
+                Advanced ML Models
+              </CardTitle>
+              <CardDescription>Logistic Regression & Random Forest using TensorFlow.js with comprehensive metrics: Accuracy, Precision, Recall, F1</CardDescription>
             </CardHeader>
           </Card>
-          <Card className="hover:shadow-md transition-shadow">
+          <Card className="surface-elevated hover:shadow-lg transition-all duration-300 hover:scale-105">
             <CardHeader>
-              <CardTitle>Live Stream & Analytics</CardTitle>
-              <CardDescription>Simulate live transactions, highlight fraud, and explore charts</CardDescription>
+              <CardTitle className="flex items-center gap-2">
+                <div className="p-1.5 bg-primary/10 rounded-md">
+                  📈
+                </div>
+                Live Stream & Analytics
+              </CardTitle>
+              <CardDescription>Real-time fraud detection, interactive dashboards, and comprehensive analytics with anomaly detection</CardDescription>
             </CardHeader>
           </Card>
         </section>

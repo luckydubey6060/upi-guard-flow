@@ -16,7 +16,7 @@ const ChatAssistant: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      content: "Hi! I'm your AI Support Assistant. I can help you understand how to use the UPI Fraud Detection Dashboard. You can also highlight any text on the page to get explanations!",
+      content: "👋 Hi! I'm your AI Support Assistant for the UPI Fraud Detection Dashboard. I can help you with:\n\n• Understanding features and workflows\n• Technical questions about ML models\n• Data format requirements\n• Troubleshooting issues\n\n💡 **Pro tip**: Highlight any text on the page and click 'Explain' for instant context-aware help!",
       isUser: false,
       timestamp: new Date()
     }
