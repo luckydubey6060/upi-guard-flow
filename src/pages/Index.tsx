@@ -21,7 +21,7 @@ const Index: React.FC = () => {
   };
 
   return (
-    <div className="relative overflow-hidden rounded-lg border bg-lavender-full">
+    <div className="relative overflow-hidden rounded-xl border surface-elevated">
       <div
         ref={areaRef}
         onMouseMove={onMove}

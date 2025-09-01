@@ -44,12 +44,12 @@ export default function Layout() {
   }, []);
 
   return (
-    <div className={`min-h-screen flex flex-col ${isHomePage ? 'bg-lavender-full' : 'bg-lavender-all-pages'}`}>
+    <div className="min-h-screen flex flex-col bg-lavender-elegant">
       <header className="sticky top-0 z-40 border-b bg-background/90 backdrop-blur">
-        <nav className="container mx-auto px-4 py-3 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-3 focus:outline-none">
-            <img src={logo} alt="UPI Fraud Detection Logo" className="w-8 h-8" />
-            <span className="font-brand text-xl bg-gradient-text bg-clip-text text-transparent">
+        <nav className="container mx-auto px-6 py-4 flex items-center justify-between">
+          <Link to="/" className="flex items-center gap-4 focus:outline-none">
+            <img src={logo} alt="UPI Fraud Detection Logo" className="w-12 h-12" />
+            <span className="font-brand text-2xl bg-gradient-text bg-clip-text text-transparent">
               UPI Fraud Detection
             </span>
           </Link>
@@ -80,8 +80,8 @@ export default function Layout() {
           </div>
         </nav>
       </header>
-      <main id="get-started" className="container mx-auto px-4 py-6 flex-1 w-full">
-        <div className="content-overlay rounded-lg p-1">
+      <main id="get-started" className="container mx-auto px-6 py-8 flex-1 w-full">
+        <div className="content-overlay rounded-xl p-8">
           <Outlet />
         </div>
       </main>

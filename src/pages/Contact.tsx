@@ -32,8 +32,8 @@ const Contact = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-accent/10 to-primary/5">
-      <div className="container mx-auto px-4 py-16">
+    <div className="space-y-8">
+      <div className="container mx-auto px-6 py-8">
         <div className="text-center mb-16">
           <h1 className="text-4xl font-bold bg-gradient-text bg-clip-text text-transparent mb-4">
             Contact Us

@@ -179,6 +179,22 @@ All colors MUST be HSL.
     background-repeat: no-repeat;
   }
 
+  .bg-lavender-elegant {
+    background: linear-gradient(135deg, 
+      hsl(var(--background)) 0%, 
+      hsl(var(--accent) / 0.1) 25%,
+      hsl(var(--primary) / 0.05) 50%,
+      hsl(var(--accent) / 0.08) 75%,
+      hsl(var(--background)) 100%
+    ),
+    url('/src/assets/lavender-provence-elegant.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    background-blend-mode: overlay;
+  }
+
   .content-overlay {
     background: hsl(var(--background) / 0.85);
     backdrop-filter: blur(2px);
