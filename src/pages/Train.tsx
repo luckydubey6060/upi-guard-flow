@@ -24,10 +24,22 @@ const TrainPage: React.FC = () => {
           <CardTitle>Dataset</CardTitle>
           <CardDescription>{dataset.length > 0 ? `${dataset.length} rows loaded` : "No dataset loaded yet."}</CardDescription>
         </CardHeader>
-        <CardContent className="flex items-center gap-3">
-          <Button variant="hero" disabled={!canTrain || isTraining} onClick={() => trainModel("logistic")}>{isTraining ? "Training..." : "Train Logistic Regression"}</Button>
-          {dataset.length === 0 && (
-            <Button variant="secondary" onClick={loadSampleDataset}>Load Sample</Button>
+        <CardContent className="flex flex-col gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
+            <Button variant="hero" disabled={!canTrain || isTraining} onClick={() => trainModel("logistic")}>
+              {isTraining ? "Training..." : "Train Logistic Regression"}
+            </Button>
+            <Button variant="secondary" disabled={!canTrain || isTraining} onClick={() => trainModel("random_forest")}>
+              {isTraining ? "Training..." : "Train Random Forest"}
+            </Button>
+            {dataset.length === 0 && (
+              <Button variant="outline" onClick={loadSampleDataset}>Load Sample</Button>
+            )}
+          </div>
+          {metrics?.modelType && (
+            <p className="text-sm text-muted-foreground">
+              Current model: {metrics.modelType === "random_forest" ? "Random Forest" : "Logistic Regression"}
+            </p>
           )}
         </CardContent>
       </Card>

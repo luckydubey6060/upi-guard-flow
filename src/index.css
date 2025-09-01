@@ -171,6 +171,14 @@ All colors MUST be HSL.
     background-repeat: no-repeat;
   }
 
+  .bg-lavender-all-pages {
+    background-image: url('/src/assets/lavender-watercolor-subtle.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+  }
+
   .content-overlay {
     background: hsl(var(--background) / 0.85);
     backdrop-filter: blur(2px);

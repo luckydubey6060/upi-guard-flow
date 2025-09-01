@@ -18,6 +18,7 @@ const navItems = [
 export default function Layout() {
   const location = useLocation();
   const [authed, setAuthed] = React.useState(false);
+  const isHomePage = location.pathname === "/";
 
   React.useEffect(() => {
     const titleMap: Record<string, string> = {
@@ -43,7 +44,7 @@ export default function Layout() {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col bg-lavender-subtle">
+    <div className={`min-h-screen flex flex-col ${isHomePage ? 'bg-lavender-full' : 'bg-lavender-all-pages'}`}>
       <header className="sticky top-0 z-40 border-b bg-background/90 backdrop-blur">
         <nav className="container mx-auto px-4 py-3 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-3 focus:outline-none">
