@@ -125,6 +125,55 @@ All colors MUST be HSL.
 }
 
 @layer components {
+  /* Dark theme enhanced styles */
+  .dark {
+    --background: 220 13% 9%;
+    --foreground: 220 9% 95%;
+    --card: 220 13% 11%;
+    --card-foreground: 220 9% 95%;
+    --popover: 220 13% 9%;
+    --popover-foreground: 220 9% 95%;
+    --primary: 272 100% 70%;
+    --primary-foreground: 272 9% 5%;
+    --primary-variant: 290 100% 75%;
+    --secondary: 220 13% 15%;
+    --secondary-foreground: 220 9% 95%;
+    --muted: 220 13% 15%;
+    --muted-foreground: 220 9% 65%;
+    --accent: 220 13% 15%;
+    --accent-foreground: 220 9% 95%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 85.7% 97.3%;
+    --success: 142 76% 36%;
+    --success-foreground: 142 76% 96%;
+    --border: 220 13% 15%;
+    --input: 220 13% 15%;
+    --ring: 272 100% 70%;
+    
+    /* Dark mode gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(272 100% 70%), hsl(290 100% 75%));
+    --gradient-elegant: linear-gradient(135deg, hsl(272 100% 60% / 0.9), hsl(290 100% 65% / 0.9));
+    --gradient-subtle: linear-gradient(180deg, hsl(220 13% 9%), hsl(220 13% 11%));
+    
+    /* Dark mode shadows */
+    --shadow-elegant: 0 10px 30px -10px hsl(272 100% 70% / 0.4);
+    --shadow-glow: 0 0 40px hsl(272 100% 70% / 0.3);
+  }
+
+  /* Enhanced glassmorphism for dark mode */
+  .dark .surface-elevated {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  }
+
+  .dark .content-overlay {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(25px);
+  }
+
   .btn-hero {
     background-image: var(--gradient-primary);
     color: hsl(var(--primary-foreground));

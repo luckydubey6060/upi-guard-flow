@@ -13,17 +13,20 @@ import Stream from "./pages/Stream";
 import Analytics from "./pages/Analytics";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
-import Auth from "./pages/Auth";
+import MFAAuth from "./components/MFAAuth";
+import AlertsNotifications from "./components/AlertsNotifications";
 import { MLProvider } from "@/context/MLContext";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
+      <ThemeProvider>
         <MLProvider>
           <Routes>
-            <Route path="/auth" element={<Auth />} />
+            <Route path="/auth" element={<MFAAuth />} />
             <Route element={<RequireAuth><Layout /></RequireAuth>}>
               <Route index element={<Index />} />
               <Route path="upload" element={<Upload />} />
@@ -31,12 +34,14 @@ const App = () => (
               <Route path="predict" element={<Predict />} />
               <Route path="stream" element={<Stream />} />
               <Route path="analytics" element={<Analytics />} />
+              <Route path="alerts" element={<AlertsNotifications />} />
               <Route path="contact" element={<Contact />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Route>
           </Routes>
         </MLProvider>
+      </ThemeProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );

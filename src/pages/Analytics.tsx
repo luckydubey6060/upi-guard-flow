@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useML } from "@/context/MLContext";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, CartesianGrid, Legend } from "recharts";
+import ExportReports from "@/components/ExportReports";
 
 const COLORS = ["hsl(var(--primary))", "hsl(var(--accent-foreground))", "hsl(var(--secondary-foreground))", "hsl(var(--muted-foreground))"]; // use theme colors
 
@@ -48,16 +49,25 @@ const AnalyticsPage: React.FC = () => {
   return (
     <div className="grid gap-8">
       <header className="space-y-4">
-        <div className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary-variant flex items-center justify-center">
-            <span className="text-2xl">📊</span>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary-variant flex items-center justify-center">
+              <span className="text-2xl">📊</span>
+            </div>
+            <div>
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-primary-variant bg-clip-text text-transparent">
+                Analytics Dashboard
+              </h1>
+              <p className="text-lg text-muted-foreground">Real-time insights into fraud detection patterns</p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-primary-variant bg-clip-text text-transparent">
-              Analytics Dashboard
-            </h1>
-            <p className="text-lg text-muted-foreground">Real-time insights into fraud detection patterns</p>
-          </div>
+          
+          {dataset.length > 0 && (
+            <ExportReports
+              data={dataset}
+              title="Analytics Dashboard"
+            />
+          )}
         </div>
         
         {dataset.length > 0 && (
@@ -122,12 +132,17 @@ const AnalyticsPage: React.FC = () => {
 
       {dataset.length > 0 && (
         <div className="grid lg:grid-cols-2 gap-8">
-          <Card className="surface-elevated">
-            <CardHeader className="pb-4">
+            <Card className="surface-elevated">
+            <CardHeader className="pb-4 flex flex-row items-center justify-between">
               <CardTitle className="flex items-center gap-2">
                 <span className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center text-sm">📊</span>
                 Fraud Count per Day
               </CardTitle>
+              <ExportReports
+                data={fraudPerDay}
+                title="Fraud Count per Day"
+                variant="icon"
+              />
             </CardHeader>
             <CardContent className="h-80">
               <ResponsiveContainer width="100%" height="100%">
@@ -154,11 +169,16 @@ const AnalyticsPage: React.FC = () => {
           </Card>
 
           <Card className="surface-elevated">
-            <CardHeader className="pb-4">
+            <CardHeader className="pb-4 flex flex-row items-center justify-between">
               <CardTitle className="flex items-center gap-2">
                 <span className="w-8 h-8 rounded-lg bg-destructive/10 flex items-center justify-center text-sm">🥧</span>
                 Fraud by Transaction Type
               </CardTitle>
+              <ExportReports
+                data={fraudByType}
+                title="Fraud by Transaction Type"
+                variant="icon"
+              />
             </CardHeader>
             <CardContent className="h-80">
               <ResponsiveContainer width="100%" height="100%">
@@ -188,11 +208,16 @@ const AnalyticsPage: React.FC = () => {
           </Card>
 
           <Card className="lg:col-span-2 surface-elevated">
-            <CardHeader className="pb-4">
+            <CardHeader className="pb-4 flex flex-row items-center justify-between">
               <CardTitle className="flex items-center gap-2">
                 <span className="w-8 h-8 rounded-lg bg-success/10 flex items-center justify-center text-sm">📈</span>
                 Transaction Volume Over Time
               </CardTitle>
+              <ExportReports
+                data={volumeOverTime}
+                title="Transaction Volume Over Time"
+                variant="icon"
+              />
             </CardHeader>
             <CardContent className="h-80">
               <ResponsiveContainer width="100%" height="100%">
