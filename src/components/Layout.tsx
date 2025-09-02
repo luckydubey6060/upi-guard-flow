@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import React from "react";
 import { supabase } from "@/integrations/supabase/client";
 import ChatAssistant from "@/components/ChatAssistant";
-import logo from "@/assets/logo.png";
+import logo from "@/assets/logo-clean.png";
 
 const navItems = [
   { to: "/", label: "Home" },
