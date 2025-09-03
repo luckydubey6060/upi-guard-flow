@@ -7,6 +7,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import logo from "@/assets/logo-clean.png";
 
 const AuthPage: React.FC = () => {
   const navigate = useNavigate();
@@ -75,7 +76,7 @@ const AuthPage: React.FC = () => {
         <div className="text-center mb-8">
           <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-primary to-primary-variant flex items-center justify-center shadow-lg">
             <img 
-              src="/src/assets/logo-clean.png" 
+              src={logo}
               alt="UPI Fraud Detection Logo" 
               className="w-10 h-10 object-contain"
               onError={(e) => {
