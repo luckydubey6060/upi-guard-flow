@@ -142,9 +142,10 @@ const AnalyticsPage: React.FC = () => {
                 data={fraudPerDay}
                 title="Fraud Count per Day"
                 variant="icon"
+                chartId="fraud-per-day-chart"
               />
             </CardHeader>
-            <CardContent className="h-80">
+            <CardContent className="h-80" id="fraud-per-day-chart">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={fraudPerDay}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted-foreground))" opacity={0.3} />
@@ -178,9 +179,10 @@ const AnalyticsPage: React.FC = () => {
                 data={fraudByType}
                 title="Fraud by Transaction Type"
                 variant="icon"
+                chartId="fraud-by-type-chart"
               />
             </CardHeader>
-            <CardContent className="h-80">
+            <CardContent className="h-80" id="fraud-by-type-chart">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie 
@@ -217,9 +219,10 @@ const AnalyticsPage: React.FC = () => {
                 data={volumeOverTime}
                 title="Transaction Volume Over Time"
                 variant="icon"
+                chartId="volume-over-time-chart"
               />
             </CardHeader>
-            <CardContent className="h-80">
+            <CardContent className="h-80" id="volume-over-time-chart">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={volumeOverTime}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--muted-foreground))" opacity={0.3} />

@@ -5,62 +5,109 @@ import { Download, FileText, FileSpreadsheet, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import html2canvas from 'html2canvas';
 
 interface ExportReportsProps {
   data: any[];
   title: string;
   variant?: 'default' | 'icon';
+  chartId?: string; // ID of the chart container to capture
 }
 
-const ExportReports: React.FC<ExportReportsProps> = ({ data, title, variant = 'default' }) => {
+const ExportReports: React.FC<ExportReportsProps> = ({ data, title, variant = 'default', chartId }) => {
   const [isExporting, setIsExporting] = useState(false);
 
   const exportToPDF = async () => {
     setIsExporting(true);
     try {
       const doc = new jsPDF();
+      let yPosition = 25;
       
       // Header
       doc.setFontSize(20);
-      doc.setTextColor(138, 43, 226); // Purple color
-      doc.text('UPI Fraud Detection Report', 20, 25);
+      doc.setTextColor(138, 43, 226);
+      doc.text('UPI Fraud Detection Report', 20, yPosition);
+      yPosition += 15;
       
       doc.setFontSize(14);
       doc.setTextColor(0, 0, 0);
-      doc.text(title, 20, 40);
+      doc.text(title, 20, yPosition);
+      yPosition += 10;
       
       doc.setFontSize(10);
-      doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 20, 50);
-      doc.text(`Total Records: ${data.length}`, 20, 58);
+      doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 20, yPosition);
+      yPosition += 8;
+      doc.text(`Total Records: ${data.length}`, 20, yPosition);
+      yPosition += 15;
+      
+      // Capture chart if chartId is provided
+      if (chartId) {
+        const chartElement = document.getElementById(chartId);
+        if (chartElement) {
+          try {
+            const canvas = await html2canvas(chartElement, {
+              backgroundColor: '#ffffff',
+              scale: 2,
+              logging: false,
+              useCORS: true
+            });
+            
+            const chartImage = canvas.toDataURL('image/png');
+            const imgWidth = 170;
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            
+            // Add chart image to PDF
+            doc.addImage(chartImage, 'PNG', 20, yPosition, imgWidth, imgHeight);
+            yPosition += imgHeight + 10;
+            
+            // If we're near the bottom, add new page
+            if (yPosition > 250) {
+              doc.addPage();
+              yPosition = 20;
+            }
+          } catch (error) {
+            console.error('Error capturing chart:', error);
+          }
+        }
+      }
       
       // Summary stats
-      const fraudCount = data.filter(item => item.FraudLabel === 1).length;
-      const fraudRate = ((fraudCount / data.length) * 100).toFixed(2);
-      
-      doc.setFontSize(12);
-      doc.text('Summary Statistics:', 20, 75);
-      doc.setFontSize(10);
-      doc.text(`• Total Transactions: ${data.length.toLocaleString()}`, 25, 85);
-      doc.text(`• Fraud Cases: ${fraudCount.toLocaleString()}`, 25, 93);
-      doc.text(`• Fraud Rate: ${fraudRate}%`, 25, 101);
-      doc.text(`• Clean Transactions: ${(data.length - fraudCount).toLocaleString()}`, 25, 109);
+      if (data.length > 0 && data[0].hasOwnProperty('FraudLabel')) {
+        const fraudCount = data.filter(item => item.FraudLabel === 1).length;
+        const fraudRate = ((fraudCount / data.length) * 100).toFixed(2);
+        
+        doc.setFontSize(12);
+        doc.text('Summary Statistics:', 20, yPosition);
+        yPosition += 10;
+        doc.setFontSize(10);
+        doc.text(`• Total Transactions: ${data.length.toLocaleString()}`, 25, yPosition);
+        yPosition += 8;
+        doc.text(`• Fraud Cases: ${fraudCount.toLocaleString()}`, 25, yPosition);
+        yPosition += 8;
+        doc.text(`• Fraud Rate: ${fraudRate}%`, 25, yPosition);
+        yPosition += 8;
+        doc.text(`• Clean Transactions: ${(data.length - fraudCount).toLocaleString()}`, 25, yPosition);
+        yPosition += 15;
+      }
       
       // Data table
       if (data.length > 0) {
-        const tableData = data.slice(0, 50).map(item => [
-          item.TransactionID || 'N/A',
-          item.UserID || 'N/A',
-          `₹${Number(item.Amount).toLocaleString()}`,
-          new Date(item.Timestamp).toLocaleDateString(),
-          item.Location || 'N/A',
-          item.TransactionType || 'N/A',
-          item.FraudLabel === 1 ? 'Fraud' : 'Clean'
-        ]);
+        const sampleData = data.slice(0, 50);
+        const headers = Object.keys(sampleData[0]);
+        
+        const tableData = sampleData.map(item => 
+          headers.map(header => {
+            if (header === 'Amount') return `₹${Number(item[header]).toLocaleString()}`;
+            if (header === 'Timestamp') return new Date(item[header]).toLocaleDateString();
+            if (header === 'FraudLabel') return item[header] === 1 ? 'Fraud' : 'Clean';
+            return item[header]?.toString() || 'N/A';
+          })
+        );
         
         autoTable(doc, {
-          head: [['Transaction ID', 'User ID', 'Amount', 'Date', 'Location', 'Type', 'Status']],
+          head: [headers],
           body: tableData,
-          startY: 120,
+          startY: yPosition,
           styles: { fontSize: 8 },
           headStyles: { fillColor: [138, 43, 226] },
           alternateRowStyles: { fillColor: [240, 240, 240] },
@@ -69,10 +116,11 @@ const ExportReports: React.FC<ExportReportsProps> = ({ data, title, variant = 'd
       
       doc.save(`${title.replace(/\s+/g, '_')}_Report_${new Date().getTime()}.pdf`);
       
-      toast.success("PDF report exported successfully!", {
+      toast.success("PDF report with chart exported successfully!", {
         icon: <CheckCircle className="w-4 h-4 text-green-500" />
       });
     } catch (error) {
+      console.error('Export error:', error);
       toast.error("Failed to export PDF");
     } finally {
       setIsExporting(false);

@@ -13,7 +13,7 @@ import Stream from "./pages/Stream";
 import Analytics from "./pages/Analytics";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
-import MFAAuth from "./components/MFAAuth";
+import AuthPage from "./pages/Auth";
 import AlertsNotifications from "./components/AlertsNotifications";
 import { MLProvider } from "@/context/MLContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
@@ -26,7 +26,7 @@ const App = () => (
       <ThemeProvider>
         <MLProvider>
           <Routes>
-            <Route path="/auth" element={<MFAAuth />} />
+            <Route path="/auth" element={<AuthPage />} />
             <Route element={<RequireAuth><Layout /></RequireAuth>}>
               <Route index element={<Index />} />
               <Route path="upload" element={<Upload />} />
@@ -40,6 +40,8 @@ const App = () => (
               <Route path="*" element={<NotFound />} />
             </Route>
           </Routes>
+          <Toaster />
+          <Sonner />
         </MLProvider>
       </ThemeProvider>
     </TooltipProvider>

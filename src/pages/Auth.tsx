@@ -74,7 +74,18 @@ const AuthPage: React.FC = () => {
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-primary to-primary-variant flex items-center justify-center shadow-lg">
-            <span className="text-2xl">🛡️</span>
+            <img 
+              src="/src/assets/logo-clean.png" 
+              alt="UPI Fraud Detection Logo" 
+              className="w-10 h-10 object-contain"
+              onError={(e) => {
+                // Fallback to emoji if logo fails to load
+                e.currentTarget.style.display = 'none';
+                const nextSibling = e.currentTarget.nextElementSibling as HTMLElement;
+                if (nextSibling) nextSibling.style.display = 'block';
+              }}
+            />
+            <span className="text-2xl" style={{ display: 'none' }}>🛡️</span>
           </div>
           <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-primary-variant bg-clip-text text-transparent mb-2">
             UPI Fraud Detection
