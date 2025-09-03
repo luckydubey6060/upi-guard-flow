@@ -2,7 +2,9 @@ import React, { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { MessageCircle, X, Send, HelpCircle } from "lucide-react";
+import { MessageCircle, X, Send, HelpCircle, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface Message {
   id: string;
@@ -23,6 +25,7 @@ const ChatAssistant: React.FC = () => {
   ]);
   const [inputValue, setInputValue] = useState("");
   const [selectedText, setSelectedText] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -99,7 +102,30 @@ const ChatAssistant: React.FC = () => {
     };
   }, [selectedText]);
 
-  const handleExplainText = (text: string) => {
+  const generateAIResponse = async (message: string, context = ''): Promise<string> => {
+    try {
+      const { data, error } = await supabase.functions.invoke('chat-assistant', {
+        body: { message, context }
+      });
+
+      if (error) {
+        console.error('Supabase function error:', error);
+        throw error;
+      }
+
+      if (data?.success && data?.message) {
+        return data.message;
+      } else {
+        throw new Error(data?.error || 'Failed to get AI response');
+      }
+    } catch (error) {
+      console.error('Error calling AI assistant:', error);
+      toast.error('Failed to connect to AI assistant. Please try again.');
+      return 'Sorry, I encountered an error. Please try asking your question again.';
+    }
+  };
+
+  const handleExplainText = async (text: string) => {
     if (!text.trim()) return;
     
     setIsOpen(true);
@@ -113,51 +139,23 @@ const ChatAssistant: React.FC = () => {
     };
     
     setMessages(prev => [...prev, userMessage]);
+    setIsLoading(true);
     
-    // Generate contextual response
-    setTimeout(() => {
-      const response = generateContextualResponse(text);
-      const assistantMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        content: response,
-        isUser: false,
-        timestamp: new Date()
-      };
-      
-      setMessages(prev => [...prev, assistantMessage]);
-    }, 500);
+    // Generate AI response
+    const response = await generateAIResponse(`Please explain: "${text}"`, text);
+    const assistantMessage: Message = {
+      id: (Date.now() + 1).toString(),
+      content: response,
+      isUser: false,
+      timestamp: new Date()
+    };
+    
+    setMessages(prev => [...prev, assistantMessage]);
+    setIsLoading(false);
   };
 
-  const generateContextualResponse = (text: string): string => {
-    const lowerText = text.toLowerCase();
-    
-    // Context-aware responses based on highlighted text
-    if (lowerText.includes('dataset') || lowerText.includes('csv')) {
-      return "A dataset is a collection of transaction data used to train the fraud detection model. You can upload CSV files with columns like TransactionID, UserID, Amount, Timestamp, Location, DeviceID, TransactionType, and FraudLabel. Our system also provides a sample dataset for quick testing.";
-    }
-    
-    if (lowerText.includes('train') || lowerText.includes('model')) {
-      return "Model training uses machine learning algorithms (specifically Logistic Regression with TensorFlow.js) to learn patterns from your transaction data. The training happens directly in your browser and provides metrics like Accuracy, Precision, Recall, and F1-score to evaluate performance.";
-    }
-    
-    if (lowerText.includes('predict') || lowerText.includes('fraud')) {
-      return "Fraud prediction analyzes transaction patterns to identify suspicious activities. Our system uses behavioral profiling, anomaly detection, and historical trends to assess fraud risk, providing confidence scores from 0-100% for each prediction.";
-    }
-    
-    if (lowerText.includes('analytics') || lowerText.includes('dashboard')) {
-      return "The analytics dashboard provides real-time insights into transaction patterns, fraud detection rates, and model performance. You can monitor live streams, view historical trends, and analyze fraud patterns through interactive charts and visualizations.";
-    }
-    
-    if (lowerText.includes('upi') || lowerText.includes('transaction')) {
-      return "UPI (Unified Payments Interface) transactions are analyzed for fraud patterns based on factors like transaction amount, timing, location, device information, and user behavior. The system identifies anomalies that might indicate fraudulent activity.";
-    }
-    
-    // Generic helpful response
-    return `I can help explain "${text}" in the context of fraud detection. This relates to our UPI fraud detection system that helps identify suspicious transactions using machine learning. Would you like me to explain any specific aspect in more detail?`;
-  };
-
-  const handleSendMessage = () => {
-    if (!inputValue.trim()) return;
+  const handleSendMessage = async () => {
+    if (!inputValue.trim() || isLoading) return;
     
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -167,83 +165,21 @@ const ChatAssistant: React.FC = () => {
     };
     
     setMessages(prev => [...prev, userMessage]);
+    const currentQuestion = inputValue;
     setInputValue("");
+    setIsLoading(true);
     
-    // Generate response based on common questions
-    setTimeout(() => {
-      const response = generateResponse(inputValue);
-      const assistantMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        content: response,
-        isUser: false,
-        timestamp: new Date()
-      };
-      
-      setMessages(prev => [...prev, assistantMessage]);
-    }, 500);
-  };
-
-  const generateResponse = (question: string): string => {
-    const lowerQuestion = question.toLowerCase();
+    // Generate AI response
+    const response = await generateAIResponse(currentQuestion);
+    const assistantMessage: Message = {
+      id: (Date.now() + 1).toString(),
+      content: response,
+      isUser: false,
+      timestamp: new Date()
+    };
     
-    if (lowerQuestion.includes('how') && (lowerQuestion.includes('start') || lowerQuestion.includes('begin'))) {
-      return "To get started: 1) Upload your CSV dataset or use our sample data, 2) Train the model by clicking 'Train Model', 3) Make predictions on the Predict page, 4) Monitor results in Analytics. Would you like me to guide you through any specific step?";
-    }
-    
-    if (lowerQuestion.includes('what') && lowerQuestion.includes('format')) {
-      return "The CSV format should include these columns: TransactionID, UserID, Amount, Timestamp, Location, DeviceID, TransactionType, FraudLabel. Don't worry if some columns are missing - our system adapts dynamically!";
-    }
-    
-    if (lowerQuestion.includes('accuracy') || lowerQuestion.includes('reliable')) {
-      return "Our fraud detection model provides accuracy metrics during training. Typical accuracy rates range from 85-95% depending on your dataset quality. The system shows Precision, Recall, and F1-scores to help you evaluate performance.";
-    }
-    
-    if (lowerQuestion.includes('sample') || lowerQuestion.includes('demo')) {
-      return "Yes! Click 'Use Sample & Train' on the home page to load a pre-built dataset with realistic transaction patterns. This is perfect for testing the system before uploading your own data.";
-    }
-    
-    if (lowerQuestion.includes('real') && lowerQuestion.includes('time')) {
-      return "The Live Stream page simulates real-time transaction monitoring. It processes your dataset to show how the system would detect fraud as transactions occur, complete with confidence scores and alerts.";
-    }
-    
-    if (lowerQuestion.includes('security') || lowerQuestion.includes('safe')) {
-      return "Your data is processed entirely in your browser using TensorFlow.js - no data leaves your device. All training and predictions happen locally, ensuring complete privacy and security of your transaction data.";
-    }
-    
-    if (lowerQuestion.includes('cost') || lowerQuestion.includes('price') || lowerQuestion.includes('free')) {
-      return "This is a demonstration version of our UPI fraud detection system. For enterprise pricing and deployment options, please contact our sales team through the Contact page.";
-    }
-    
-    if (lowerQuestion.includes('support') || lowerQuestion.includes('help') || lowerQuestion.includes('contact')) {
-      return "You can reach our support team through the Contact page, or continue chatting with me here! I'm available 24/7 to help with technical questions, usage guidance, and troubleshooting.";
-    }
-    
-    if (lowerQuestion.includes('api') || lowerQuestion.includes('integration')) {
-      return "Our fraud detection system can be integrated via REST APIs for real-time transaction screening. Contact us for API documentation and integration support for your existing payment systems.";
-    }
-    
-    if (lowerQuestion.includes('train') && lowerQuestion.includes('time')) {
-      return "Training time depends on your dataset size. Typically: Small datasets (1K-10K transactions) take 30-60 seconds, Medium datasets (10K-100K) take 2-5 minutes, and Large datasets (100K+) may take 5-15 minutes.";
-    }
-    
-    if (lowerQuestion.includes('mobile') || lowerQuestion.includes('phone')) {
-      return "Yes! Our dashboard is fully responsive and works on mobile devices. You can upload data, train models, and view analytics from your smartphone or tablet with the same functionality.";
-    }
-    
-    if (lowerQuestion.includes('export') || lowerQuestion.includes('download')) {
-      return "You can export your trained models and prediction results. The Analytics page provides download options for reports, and trained models can be saved for future use or deployment.";
-    }
-    
-    if (lowerQuestion.includes('language') || lowerQuestion.includes('localization')) {
-      return "Currently, our interface is available in English. We're working on multi-language support for global deployment. The system can process transaction data in any format regardless of region.";
-    }
-    
-    if (lowerQuestion.includes('performance') || lowerQuestion.includes('speed')) {
-      return "Our browser-based ML implementation is optimized for performance. Prediction speed is typically under 100ms per transaction, making it suitable for real-time fraud detection in high-volume environments.";
-    }
-    
-    // Default helpful response
-    return "I'm here to help with any questions about the UPI Fraud Detection Dashboard! You can ask about uploading data, training models, making predictions, understanding analytics, security, pricing, mobile usage, API integration, or anything else. What would you like to know more about?";
+    setMessages(prev => [...prev, assistantMessage]);
+    setIsLoading(false);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -306,6 +242,14 @@ const ChatAssistant: React.FC = () => {
                   </div>
                 </div>
               ))}
+              {isLoading && (
+                <div className="flex justify-start">
+                  <div className="bg-muted text-muted-foreground rounded-lg px-3 py-2 text-sm flex items-center gap-2">
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    AI is typing...
+                  </div>
+                </div>
+              )}
               <div ref={messagesEndRef} />
             </div>
           </ScrollArea>
