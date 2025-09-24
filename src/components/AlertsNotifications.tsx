@@ -7,8 +7,9 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Bell, Mail, MessageSquare, Smartphone, AlertTriangle, X } from "lucide-react";
+import { Bell, Mail, MessageSquare, Smartphone, AlertTriangle, X, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
+import { AlertService } from "@/services/alertService";
 
 interface AlertSettings {
   emailAlerts: boolean;
@@ -22,10 +23,13 @@ interface AlertSettings {
 interface FraudAlert {
   id: string;
   amount: number;
-  time: string;
-  riskLevel: 'high' | 'medium' | 'low';
-  type: string;
-  sent: boolean;
+  timestamp: string;
+  risk_level: string;
+  transaction_type: string;
+  alert_sent: boolean;
+  email_sent: boolean;
+  fraud_probability: number;
+  location?: string;
 }
 
 const AlertsNotifications: React.FC = () => {
@@ -38,24 +42,8 @@ const AlertsNotifications: React.FC = () => {
     priority: 'high'
   });
 
-  const [recentAlerts, setRecentAlerts] = useState<FraudAlert[]>([
-    {
-      id: '1',
-      amount: 25000,
-      time: '10:32 AM',
-      riskLevel: 'high',
-      type: 'Unusual Location',
-      sent: true
-    },
-    {
-      id: '2', 
-      amount: 15000,
-      time: '09:15 AM',
-      riskLevel: 'medium',
-      type: 'Large Amount',
-      sent: true
-    }
-  ]);
+  const [recentAlerts, setRecentAlerts] = useState<FraudAlert[]>([]);
+  const [loadingAlerts, setLoadingAlerts] = useState(false);
 
   const [showDemoAlert, setShowDemoAlert] = useState(false);
 
@@ -65,19 +53,64 @@ const AlertsNotifications: React.FC = () => {
     if (saved) {
       setSettings(JSON.parse(saved));
     }
+    
+    // Load recent alerts
+    loadRecentAlerts();
   }, []);
+
+  const loadRecentAlerts = async () => {
+    setLoadingAlerts(true);
+    try {
+      const alerts = await AlertService.getRecentAlerts(10);
+      setRecentAlerts(alerts);
+    } catch (error) {
+      console.error('Failed to load recent alerts:', error);
+    } finally {
+      setLoadingAlerts(false);
+    }
+  };
 
   const saveSettings = () => {
     localStorage.setItem('alertSettings', JSON.stringify(settings));
     toast.success("Alert settings saved successfully!");
   };
 
-  const testAlert = () => {
-    setShowDemoAlert(true);
-    toast.success("Test alert sent!", {
-      description: "Check your configured channels for the test message"
-    });
-    setTimeout(() => setShowDemoAlert(false), 5000);
+  const testAlert = async () => {
+    if (!settings.emailAddress && settings.emailAlerts) {
+      toast.error("Please enter an email address to test alerts");
+      return;
+    }
+    
+    try {
+      const testTransaction = {
+        transactionId: `TEST_${Date.now()}`,
+        amount: 25000,
+        timestamp: new Date().toISOString(),
+        location: "Test Location",
+        transactionType: "P2P",
+        fraudProbability: 0.85,
+      };
+      
+      const result = await AlertService.sendFraudAlert(testTransaction);
+      
+      if (result.success) {
+        setShowDemoAlert(true);
+        toast.success("Test alert sent successfully!", {
+          description: settings.emailAlerts ? `Check ${settings.emailAddress} for the test alert` : "Test alert processed"
+        });
+        setTimeout(() => setShowDemoAlert(false), 5000);
+        
+        // Refresh alerts to show the new test alert
+        loadRecentAlerts();
+      } else {
+        toast.error("Failed to send test alert", {
+          description: result.error || "Unknown error"
+        });
+      }
+    } catch (error) {
+      console.error("Test alert error:", error);
+      toast.error("Failed to send test alert");
+    }
   };
 
   const getRiskColor = (level: string) => {
@@ -113,10 +146,10 @@ const AlertsNotifications: React.FC = () => {
                 </Button>
               </div>
               <h4 className="font-semibold text-red-700 mb-1">
-                Suspicious Transaction Detected
+                Test Alert: Suspicious Transaction Detected
               </h4>
               <p className="text-sm text-muted-foreground mb-2">
-                ₹25,000 flagged as suspicious at 10:32 AM
+                ₹25,000 flagged as suspicious at {new Date().toLocaleTimeString()}
               </p>
               <div className="flex items-center gap-1 text-xs text-muted-foreground">
                 <span>Alert sent via:</span>
@@ -265,28 +298,67 @@ const AlertsNotifications: React.FC = () => {
         <div className="space-y-6">
           <Card className="surface-elevated">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <AlertTriangle className="w-5 h-5" />
-                Recent Alerts
+              <CardTitle className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <AlertTriangle className="w-5 h-5" />
+                  Recent Alerts
+                </div>
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  onClick={loadRecentAlerts}
+                  disabled={loadingAlerts}
+                >
+                  <RefreshCw className={`w-4 h-4 ${loadingAlerts ? 'animate-spin' : ''}`} />
+                </Button>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              {recentAlerts.map((alert) => (
-                <div key={alert.id} className="p-3 rounded-lg border bg-card/50">
-                  <div className="flex items-center justify-between mb-2">
-                    <Badge className={getRiskColor(alert.riskLevel)}>
-                      {alert.riskLevel.toUpperCase()}
-                    </Badge>
-                    <span className="text-xs text-muted-foreground">{alert.time}</span>
-                  </div>
-                  <p className="text-sm font-medium">₹{alert.amount.toLocaleString()}</p>
-                  <p className="text-xs text-muted-foreground">{alert.type}</p>
-                  <div className="flex items-center gap-1 mt-2">
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <span className="text-xs text-green-600">Alert sent</span>
-                  </div>
+              {loadingAlerts ? (
+                <div className="p-4 text-center text-muted-foreground">
+                  <RefreshCw className="w-4 h-4 animate-spin mx-auto mb-2" />
+                  Loading recent alerts...
                 </div>
-              ))}
+              ) : recentAlerts.length === 0 ? (
+                <div className="p-4 text-center text-muted-foreground">
+                  <AlertTriangle className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                  <p>No fraud alerts yet</p>
+                  <p className="text-xs">Alerts will appear here when fraud is detected</p>
+                </div>
+              ) : (
+                recentAlerts.map((alert) => (
+                  <div key={alert.id} className="p-3 rounded-lg border bg-card/50">
+                    <div className="flex items-center justify-between mb-2">
+                      <Badge className={getRiskColor(alert.risk_level)}>
+                        {alert.risk_level.toUpperCase()}
+                      </Badge>
+                      <span className="text-xs text-muted-foreground">
+                        {new Date(alert.timestamp).toLocaleDateString()} {new Date(alert.timestamp).toLocaleTimeString()}
+                      </span>
+                    </div>
+                    <p className="text-sm font-medium">₹{Number(alert.amount).toLocaleString()}</p>
+                    <p className="text-xs text-muted-foreground">{alert.transaction_type}</p>
+                    {alert.location && (
+                      <p className="text-xs text-muted-foreground">📍 {alert.location}</p>
+                    )}
+                    <div className="flex items-center gap-1 mt-2">
+                      <div className={`w-2 h-2 rounded-full ${alert.alert_sent ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                      <span className={`text-xs ${alert.alert_sent ? 'text-green-600' : 'text-red-600'}`}>
+                        {alert.alert_sent ? 'Alert sent' : 'Alert failed'}
+                      </span>
+                      {alert.email_sent && (
+                        <>
+                          <Mail className="w-3 h-3 ml-2 text-blue-500" />
+                          <span className="text-xs text-blue-600">Email</span>
+                        </>
+                      )}
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-1">
+                      Fraud probability: {(alert.fraud_probability * 100).toFixed(1)}%
+                    </div>
+                  </div>
+                ))
+              )}
             </CardContent>
           </Card>
 

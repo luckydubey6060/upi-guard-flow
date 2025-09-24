@@ -190,7 +190,35 @@ export const MLProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     if (!model || !encoders) throw new Error("Model not trained yet");
     const x = tf.tensor2d([vectorize(row as TransactionRow, encoders)]);
     const prob = (await (model.predict(x) as tf.Tensor).data())[0];
-    return { prob, label: prob >= 0.5 ? "Fraud" : "Genuine" };
+    
+    const result: { prob: number; label: "Fraud" | "Genuine" } = { 
+      prob, 
+      label: prob >= 0.5 ? "Fraud" : "Genuine" 
+    };
+    
+    // Trigger fraud alert if fraud is detected
+    if (result.label === "Fraud") {
+      // Dynamic import to avoid circular dependencies
+      const { AlertService } = await import("@/services/alertService");
+      
+      try {
+        await AlertService.sendFraudAlert({
+          transactionId: (row as any).TransactionID || (row as any).transactionid || undefined,
+          userId: (row as any).UserID || (row as any).userid || undefined,
+          amount: row.Amount,
+          timestamp: row.Timestamp,
+          location: row.Location,
+          transactionType: row.TransactionType,
+          fraudProbability: prob,
+        });
+        
+        console.log('Fraud alert sent for transaction:', row);
+      } catch (alertError) {
+        console.error('Failed to send fraud alert:', alertError);
+      }
+    }
+    
+    return result;
   }, [model, encoders]);
 
   const value = useMemo(() => ({

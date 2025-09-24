@@ -88,10 +88,10 @@ ${context ? `User context: "${context}"` : ''}`;
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error in chat-assistant function:', error);
     return new Response(JSON.stringify({ 
-      error: error.message,
+      error: error instanceof Error ? error.message : 'An unknown error occurred',
       success: false 
     }), {
       status: 500,

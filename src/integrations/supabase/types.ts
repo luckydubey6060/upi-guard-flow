@@ -44,6 +44,63 @@ export type Database = {
         }
         Relationships: []
       }
+      fraud_alerts: {
+        Row: {
+          alert_sent: boolean
+          alert_settings: Json | null
+          amount: number
+          created_at: string
+          email_sent: boolean
+          fraud_probability: number
+          id: string
+          location: string | null
+          risk_level: string
+          sms_sent: boolean
+          timestamp: string
+          transaction_id: string | null
+          transaction_type: string
+          updated_at: string
+          user_id: string | null
+          whatsapp_sent: boolean
+        }
+        Insert: {
+          alert_sent?: boolean
+          alert_settings?: Json | null
+          amount: number
+          created_at?: string
+          email_sent?: boolean
+          fraud_probability: number
+          id?: string
+          location?: string | null
+          risk_level: string
+          sms_sent?: boolean
+          timestamp: string
+          transaction_id?: string | null
+          transaction_type: string
+          updated_at?: string
+          user_id?: string | null
+          whatsapp_sent?: boolean
+        }
+        Update: {
+          alert_sent?: boolean
+          alert_settings?: Json | null
+          amount?: number
+          created_at?: string
+          email_sent?: boolean
+          fraud_probability?: number
+          id?: string
+          location?: string | null
+          risk_level?: string
+          sms_sent?: boolean
+          timestamp?: string
+          transaction_id?: string | null
+          transaction_type?: string
+          updated_at?: string
+          user_id?: string | null
+          whatsapp_sent?: boolean
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
