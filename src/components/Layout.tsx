@@ -15,6 +15,7 @@ const navItems = [
   { to: "/stream", label: "Stream" },
   { to: "/analytics", label: "Analytics" },
   { to: "/alerts", label: "Alerts" },
+  { to: "/qr-scan", label: "QR Scan" },
   { to: "/contact", label: "Contact" },
 ];
 
@@ -33,6 +34,7 @@ export default function Layout() {
       "/stream": "Real-Time Stream | UPI Fraud Detection",
       "/analytics": "Analytics Dashboard | UPI Fraud Detection",
       "/alerts": "Alerts & Notifications | UPI Fraud Detection",
+      "/qr-scan": "QR Security Scanner | UPI Fraud Detection",
       "/contact": "Contact Us | UPI Fraud Detection",
     };
     document.title = titleMap[location.pathname] || "UPI Fraud Detection";

@@ -14,6 +14,7 @@ import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
 import AuthPage from "./pages/Auth";
 import AlertsNotifications from "./components/AlertsNotifications";
+import QRScan from "./pages/QRScan";
 import { MLProvider } from "@/context/MLContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 
@@ -31,6 +32,7 @@ const App = () => (
             <Route path="stream" element={<Stream />} />
             <Route path="analytics" element={<Analytics />} />
             <Route path="alerts" element={<AlertsNotifications />} />
+            <Route path="qr-scan" element={<QRScan />} />
             <Route path="contact" element={<Contact />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

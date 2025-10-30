@@ -101,6 +101,93 @@ export type Database = {
         }
         Relationships: []
       }
+      qr_codes_whitelist: {
+        Row: {
+          batch_number: string | null
+          created_at: string
+          digital_signature: string
+          expiry_date: string | null
+          id: string
+          is_active: boolean
+          manufacturer: string
+          manufacturing_date: string | null
+          product_id: string
+          product_name: string
+          qr_code_hash: string
+          updated_at: string
+        }
+        Insert: {
+          batch_number?: string | null
+          created_at?: string
+          digital_signature: string
+          expiry_date?: string | null
+          id?: string
+          is_active?: boolean
+          manufacturer: string
+          manufacturing_date?: string | null
+          product_id: string
+          product_name: string
+          qr_code_hash: string
+          updated_at?: string
+        }
+        Update: {
+          batch_number?: string | null
+          created_at?: string
+          digital_signature?: string
+          expiry_date?: string | null
+          id?: string
+          is_active?: boolean
+          manufacturer?: string
+          manufacturing_date?: string | null
+          product_id?: string
+          product_name?: string
+          qr_code_hash?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      qr_scan_history: {
+        Row: {
+          alert_sent: boolean
+          created_at: string
+          id: string
+          is_authentic: boolean
+          is_duplicate: boolean
+          is_suspicious_velocity: boolean
+          qr_code_hash: string
+          scan_device: string | null
+          scan_location: string | null
+          scan_timestamp: string
+          user_contact: string | null
+        }
+        Insert: {
+          alert_sent?: boolean
+          created_at?: string
+          id?: string
+          is_authentic: boolean
+          is_duplicate?: boolean
+          is_suspicious_velocity?: boolean
+          qr_code_hash: string
+          scan_device?: string | null
+          scan_location?: string | null
+          scan_timestamp?: string
+          user_contact?: string | null
+        }
+        Update: {
+          alert_sent?: boolean
+          created_at?: string
+          id?: string
+          is_authentic?: boolean
+          is_duplicate?: boolean
+          is_suspicious_velocity?: boolean
+          qr_code_hash?: string
+          scan_device?: string | null
+          scan_location?: string | null
+          scan_timestamp?: string
+          user_contact?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
