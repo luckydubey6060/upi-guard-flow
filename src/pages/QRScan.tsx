@@ -29,6 +29,10 @@ const QRScan = () => {
   const [scanResult, setScanResult] = useState<ScanResult | null>(null);
   const [isScanning, setIsScanning] = useState(false);
   const [userContact, setUserContact] = useState("");
+  const [phoneVerificationResult, setPhoneVerificationResult] = useState<{
+    isVerified: boolean;
+    message: string;
+  } | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -133,6 +137,46 @@ const QRScan = () => {
     reader.readAsDataURL(file);
   };
 
+  const checkPhoneNumber = async () => {
+    if (!userContact || userContact.trim() === '') {
+      toast.error('Please enter a phone number first');
+      return;
+    }
+
+    try {
+      const { supabase } = await import('@/integrations/supabase/client');
+      const { data, error } = await supabase
+        .from('verified_phone_numbers')
+        .select('*')
+        .eq('phone_number', userContact)
+        .eq('is_active', true)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error checking phone:', error);
+        toast.error('Failed to verify phone number');
+        return;
+      }
+
+      if (data) {
+        setPhoneVerificationResult({
+          isVerified: true,
+          message: `✅ Phone number is VERIFIED and REAL${data.user_name ? ` (${data.user_name})` : ''}`
+        });
+        toast.success('Phone number verified!');
+      } else {
+        setPhoneVerificationResult({
+          isVerified: false,
+          message: '⚠️ Phone number is NOT VERIFIED - This is a FAKE/UNREGISTERED number'
+        });
+        toast.error('Phone number not verified!');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      toast.error('Failed to check phone number');
+    }
+  };
+
   const verifyQRCode = async (qrData: string) => {
     try {
       toast.loading("Verifying QR code...");
@@ -210,13 +254,38 @@ const QRScan = () => {
                         type="tel"
                         placeholder="e.g. +919876543210"
                         value={userContact}
-                        onChange={(e) => setUserContact(e.target.value)}
+                        onChange={(e) => {
+                          setUserContact(e.target.value);
+                          setPhoneVerificationResult(null);
+                        }}
                         required
                       />
                       <p className="text-xs text-muted-foreground">
                         Format: +91XXXXXXXXXX (Test: +919876543210)
                       </p>
                     </div>
+
+                    {phoneVerificationResult && (
+                      <Alert variant={phoneVerificationResult.isVerified ? "default" : "destructive"}>
+                        {phoneVerificationResult.isVerified ? (
+                          <CheckCircle className="h-4 w-4" />
+                        ) : (
+                          <AlertTriangle className="h-4 w-4" />
+                        )}
+                        <AlertDescription className="text-sm">
+                          {phoneVerificationResult.message}
+                        </AlertDescription>
+                      </Alert>
+                    )}
+
+                    <Button 
+                      onClick={checkPhoneNumber} 
+                      variant="outline" 
+                      className="w-full"
+                    >
+                      <Shield className="h-4 w-4 mr-2" />
+                      Check if Phone Number is Real or Fake
+                    </Button>
 
                     <div className="flex gap-2">
                       {!isScanning ? (
@@ -242,13 +311,38 @@ const QRScan = () => {
                         type="tel"
                         placeholder="e.g. +919876543210"
                         value={userContact}
-                        onChange={(e) => setUserContact(e.target.value)}
+                        onChange={(e) => {
+                          setUserContact(e.target.value);
+                          setPhoneVerificationResult(null);
+                        }}
                         required
                       />
                       <p className="text-xs text-muted-foreground">
                         Format: +91XXXXXXXXXX (Test: +919876543210)
                       </p>
                     </div>
+
+                    {phoneVerificationResult && (
+                      <Alert variant={phoneVerificationResult.isVerified ? "default" : "destructive"}>
+                        {phoneVerificationResult.isVerified ? (
+                          <CheckCircle className="h-4 w-4" />
+                        ) : (
+                          <AlertTriangle className="h-4 w-4" />
+                        )}
+                        <AlertDescription className="text-sm">
+                          {phoneVerificationResult.message}
+                        </AlertDescription>
+                      </Alert>
+                    )}
+
+                    <Button 
+                      onClick={checkPhoneNumber} 
+                      variant="outline" 
+                      className="w-full"
+                    >
+                      <Shield className="h-4 w-4 mr-2" />
+                      Check if Phone Number is Real or Fake
+                    </Button>
 
                     <div className="border-2 border-dashed border-muted rounded-lg p-8 text-center">
                       <Upload className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
