@@ -58,24 +58,31 @@ export class QRVerificationService {
     return (data && data.length > 3) || false;
   }
 
-  // Verify QR code against whitelist
+  // Verify QR code based on phone number verification
   static async verifyQRCode(qrData: string, userContact?: string): Promise<VerificationResult> {
     const qrHash = this.generateHash(qrData);
     const timestamp = new Date().toISOString();
 
-    // Check whitelist for authentic code
-    const { data: whitelistData, error: whitelistError } = await supabase
-      .from('qr_codes_whitelist')
-      .select('*')
-      .eq('qr_code_hash', qrHash)
-      .eq('is_active', true)
-      .maybeSingle();
+    // Check if phone number is verified/genuine
+    let isAuthentic = false;
+    let phoneVerified = false;
+    
+    if (userContact) {
+      const { data: phoneData, error: phoneError } = await supabase
+        .from('verified_phone_numbers')
+        .select('*')
+        .eq('phone_number', userContact)
+        .eq('is_active', true)
+        .maybeSingle();
 
-    if (whitelistError) {
-      console.error('Error checking whitelist:', whitelistError);
+      if (phoneError) {
+        console.error('Error checking phone number:', phoneError);
+      }
+
+      phoneVerified = !!phoneData;
+      isAuthentic = phoneVerified; // Authentic if phone number is verified
     }
 
-    const isAuthentic = !!whitelistData;
     const isDuplicate = await this.checkDuplicateScan(qrHash);
     const isSuspiciousVelocity = await this.checkSuspiciousVelocity(qrHash);
 
@@ -89,14 +96,14 @@ export class QRVerificationService {
         is_duplicate: isDuplicate,
         is_suspicious_velocity: isSuspiciousVelocity,
         user_contact: userContact || null,
-        alert_sent: !isAuthentic, // Send alert if counterfeit
+        alert_sent: !isAuthentic, // Send alert if not authentic
       });
 
     if (historyError) {
       console.error('Error storing scan history:', historyError);
     }
 
-    // If counterfeit detected, send fraud alert
+    // If not authentic (invalid phone) or suspicious activity, send fraud alert
     if (!isAuthentic || isDuplicate || isSuspiciousVelocity) {
       await this.sendFraudAlert({
         qrData,
@@ -117,11 +124,12 @@ export class QRVerificationService {
       timestamp,
     };
 
-    if (isAuthentic && whitelistData) {
+    // Add info about phone verification
+    if (phoneVerified) {
       result.productInfo = {
-        productName: whitelistData.product_name,
-        manufacturer: whitelistData.manufacturer,
-        batchNumber: whitelistData.batch_number,
+        productName: 'Verified Product',
+        manufacturer: 'Authenticated by Phone',
+        batchNumber: userContact,
       };
     }
 

@@ -40,6 +40,11 @@ const QRScan = () => {
   });
 
   const startLiveScanning = async () => {
+    if (!userContact || userContact.trim() === '') {
+      toast.error('Please enter your phone number first');
+      return;
+    }
+    
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ 
         video: { facingMode: "environment" } 
@@ -92,6 +97,11 @@ const QRScan = () => {
   };
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (!userContact || userContact.trim() === '') {
+      toast.error('Please enter your phone number first');
+      return;
+    }
+    
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -159,7 +169,7 @@ const QRScan = () => {
             <CardHeader>
               <CardTitle>Scan QR Code</CardTitle>
               <CardDescription>
-                Verify product authenticity using live camera or image upload
+                Scan any QR code - Authenticity verified by your registered phone number
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -194,14 +204,18 @@ const QRScan = () => {
                     </div>
                     
                     <div className="space-y-2">
-                      <Label htmlFor="contact">Contact Number (Optional)</Label>
+                      <Label htmlFor="contact">Phone Number (Required)</Label>
                       <Input
                         id="contact"
                         type="tel"
-                        placeholder="+1234567890"
+                        placeholder="e.g. +919876543210"
                         value={userContact}
                         onChange={(e) => setUserContact(e.target.value)}
+                        required
                       />
+                      <p className="text-xs text-muted-foreground">
+                        Format: +91XXXXXXXXXX (Test: +919876543210)
+                      </p>
                     </div>
 
                     <div className="flex gap-2">
@@ -222,14 +236,18 @@ const QRScan = () => {
                 <TabsContent value="upload" className="space-y-4">
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="contact-upload">Contact Number (Optional)</Label>
+                      <Label htmlFor="contact-upload">Phone Number (Required)</Label>
                       <Input
                         id="contact-upload"
                         type="tel"
-                        placeholder="+1234567890"
+                        placeholder="e.g. +919876543210"
                         value={userContact}
                         onChange={(e) => setUserContact(e.target.value)}
+                        required
                       />
+                      <p className="text-xs text-muted-foreground">
+                        Format: +91XXXXXXXXXX (Test: +919876543210)
+                      </p>
                     </div>
 
                     <div className="border-2 border-dashed border-muted rounded-lg p-8 text-center">
@@ -352,8 +370,8 @@ const QRScan = () => {
               <div className="flex items-start gap-2">
                 <CheckCircle className="h-4 w-4 text-primary mt-0.5" />
                 <div>
-                  <p className="font-medium">Cryptographic Hashing</p>
-                  <p className="text-xs text-muted-foreground">SHA-256 verification</p>
+                  <p className="font-medium">Phone Verification</p>
+                  <p className="text-xs text-muted-foreground">Registered number validation</p>
                 </div>
               </div>
               <div className="flex items-start gap-2">
@@ -374,8 +392,14 @@ const QRScan = () => {
                 <CheckCircle className="h-4 w-4 text-primary mt-0.5" />
                 <div>
                   <p className="font-medium">Instant Alerts</p>
-                  <p className="text-xs text-muted-foreground">SMS & Email notifications</p>
+                  <p className="text-xs text-muted-foreground">For unauthorized users</p>
                 </div>
+              </div>
+              <div className="mt-4 p-3 bg-muted rounded-lg">
+                <p className="text-xs font-medium mb-1">Test Phone Numbers:</p>
+                <p className="text-xs text-muted-foreground">+919876543210</p>
+                <p className="text-xs text-muted-foreground">+919876543211</p>
+                <p className="text-xs text-muted-foreground">+911234567890</p>
               </div>
             </CardContent>
           </Card>
