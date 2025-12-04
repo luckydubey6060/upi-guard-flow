@@ -1,10 +1,11 @@
 import { useState, useRef } from "react";
-import { Camera, Upload, Shield, AlertTriangle, CheckCircle, History, Scan, CreditCard, Info } from "lucide-react";
+import { Camera, Upload, Shield, AlertTriangle, CheckCircle, History, Scan, CreditCard, Info, AtSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import jsQR from "jsqr";
 import { useQuery } from "@tanstack/react-query";
@@ -29,8 +30,18 @@ interface ScanResult {
   fraudReasons: string[];
 }
 
+interface UPIIDResult {
+  upiId: string;
+  isValid: boolean;
+  bankHandle: string;
+  reasons: string[];
+  timestamp: string;
+}
+
 const QRScan = () => {
   const [scanResult, setScanResult] = useState<ScanResult | null>(null);
+  const [upiIdResult, setUpiIdResult] = useState<UPIIDResult | null>(null);
+  const [manualUpiId, setManualUpiId] = useState("");
   const [isScanning, setIsScanning] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -120,6 +131,74 @@ const QRScan = () => {
     }
 
     return { isValid: reasons.length === 0, reasons };
+  };
+
+  const validateManualUPIId = (upiId: string): { isValid: boolean; reasons: string[]; bankHandle: string } => {
+    const reasons: string[] = [];
+    let bankHandle = "";
+
+    if (!upiId || upiId.trim() === "") {
+      reasons.push("UPI ID cannot be empty");
+      return { isValid: false, reasons, bankHandle };
+    }
+
+    const trimmedId = upiId.trim().toLowerCase();
+
+    // Check basic format: username@bank
+    const vpaRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9]+$/;
+    if (!vpaRegex.test(trimmedId)) {
+      reasons.push("Invalid UPI ID format. Must be like: username@bank");
+    }
+
+    // Extract and validate PSP handle
+    const parts = trimmedId.split('@');
+    if (parts.length === 2) {
+      const username = parts[0];
+      bankHandle = parts[1].toUpperCase();
+
+      // Check username length
+      if (username.length < 3) {
+        reasons.push("Username too short (minimum 3 characters)");
+      }
+
+      // Validate PSP handle
+      const validHandles = ['paytm', 'ybl', 'okaxis', 'oksbi', 'okicici', 'okhdfcbank', 'upi', 'apl', 'axl', 'ibl', 'pnb', 'sbi', 'hdfc', 'icici', 'axis', 'kotak', 'boi', 'cbi', 'pnb', 'bob', 'canara', 'union', 'indian', 'idbi', 'rbl', 'federal', 'yes', 'indus', 'dbs', 'hsbc', 'sc', 'citi', 'freecharge', 'airtel', 'jio', 'gpay', 'phonepe', 'amazonpay', 'whatsapp'];
+      
+      if (!validHandles.includes(parts[1])) {
+        reasons.push(`Unrecognized bank handle: @${bankHandle}. Verify with your bank.`);
+      }
+    } else {
+      reasons.push("UPI ID must contain exactly one '@' symbol");
+    }
+
+    return { isValid: reasons.length === 0, reasons, bankHandle };
+  };
+
+  const verifyManualUPIId = () => {
+    if (!manualUpiId.trim()) {
+      toast.error("Please enter a UPI ID");
+      return;
+    }
+
+    toast.loading("Verifying UPI ID...");
+    const validation = validateManualUPIId(manualUpiId);
+
+    const result: UPIIDResult = {
+      upiId: manualUpiId.trim(),
+      isValid: validation.isValid,
+      bankHandle: validation.bankHandle,
+      reasons: validation.reasons,
+      timestamp: new Date().toISOString(),
+    };
+
+    setUpiIdResult(result);
+    setScanResult(null); // Clear QR scan result
+
+    if (validation.isValid) {
+      toast.success("✅ Valid UPI ID!");
+    } else {
+      toast.error("⚠️ Invalid or Suspicious UPI ID!");
+    }
   };
 
   const startLiveScanning = async () => {
@@ -222,6 +301,7 @@ const QRScan = () => {
       };
 
       setScanResult(result);
+      setUpiIdResult(null); // Clear manual UPI ID result
       refetchHistory();
 
       // Store in history
@@ -292,14 +372,18 @@ const QRScan = () => {
               </CardHeader>
               <CardContent>
                 <Tabs defaultValue="camera" className="w-full">
-                  <TabsList className="grid w-full grid-cols-2 mb-6">
+                  <TabsList className="grid w-full grid-cols-3 mb-6">
                     <TabsTrigger value="camera">
                       <Camera className="h-4 w-4 mr-2" />
-                      Camera Scan
+                      Camera
                     </TabsTrigger>
                     <TabsTrigger value="upload">
                       <Upload className="h-4 w-4 mr-2" />
-                      Upload Image
+                      Upload
+                    </TabsTrigger>
+                    <TabsTrigger value="upi-id">
+                      <AtSign className="h-4 w-4 mr-2" />
+                      UPI ID
                     </TabsTrigger>
                   </TabsList>
 
@@ -355,6 +439,37 @@ const QRScan = () => {
                         onChange={handleImageUpload}
                         className="hidden"
                       />
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="upi-id" className="space-y-4">
+                    <div className="space-y-4 p-6 border-2 border-dashed border-muted rounded-xl">
+                      <div className="text-center mb-4">
+                        <AtSign className="h-12 w-12 mx-auto text-muted-foreground mb-2" />
+                        <p className="text-lg font-medium">Enter UPI ID</p>
+                        <p className="text-sm text-muted-foreground">
+                          Type any UPI ID to verify if it's valid
+                        </p>
+                      </div>
+                      
+                      <div className="space-y-3">
+                        <Input
+                          type="text"
+                          placeholder="example@paytm, name@ybl, etc."
+                          value={manualUpiId}
+                          onChange={(e) => setManualUpiId(e.target.value)}
+                          className="text-center text-lg h-12"
+                          onKeyDown={(e) => e.key === 'Enter' && verifyManualUPIId()}
+                        />
+                        <Button onClick={verifyManualUPIId} className="w-full" size="lg">
+                          <Shield className="h-4 w-4 mr-2" />
+                          Verify UPI ID
+                        </Button>
+                      </div>
+
+                      <div className="text-xs text-muted-foreground text-center mt-4">
+                        <p>Examples: yourname@paytm, merchant@ybl, shop@oksbi</p>
+                      </div>
                     </div>
                   </TabsContent>
                 </Tabs>
@@ -449,6 +564,70 @@ const QRScan = () => {
                         ))}
                       </div>
                     </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* UPI ID Result Box */}
+            {upiIdResult && (
+              <Card className={`border-2 ${upiIdResult.isValid ? 'border-success bg-success/5' : 'border-destructive bg-destructive/5'}`}>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-3">
+                    {upiIdResult.isValid ? (
+                      <>
+                        <CheckCircle className="h-8 w-8 text-success" />
+                        <span className="text-success">Valid UPI ID</span>
+                      </>
+                    ) : (
+                      <>
+                        <AlertTriangle className="h-8 w-8 text-destructive" />
+                        <span className="text-destructive">Invalid / Suspicious UPI ID</span>
+                      </>
+                    )}
+                  </CardTitle>
+                  <CardDescription>
+                    Verified: {new Date(upiIdResult.timestamp).toLocaleString()}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-3">
+                    <div className="flex justify-between p-3 rounded bg-background">
+                      <span className="text-muted-foreground">UPI ID:</span>
+                      <span className="font-mono font-medium">{upiIdResult.upiId}</span>
+                    </div>
+                    {upiIdResult.bankHandle && (
+                      <div className="flex justify-between p-3 rounded bg-background">
+                        <span className="text-muted-foreground">Bank Handle:</span>
+                        <Badge variant={upiIdResult.isValid ? "default" : "destructive"}>
+                          @{upiIdResult.bankHandle}
+                        </Badge>
+                      </div>
+                    )}
+                  </div>
+
+                  {!upiIdResult.isValid && upiIdResult.reasons.length > 0 && (
+                    <div className="space-y-2 pt-2 border-t">
+                      <p className="text-sm font-semibold text-destructive">Issues Found:</p>
+                      <div className="space-y-1">
+                        {upiIdResult.reasons.map((reason, idx) => (
+                          <div key={idx} className="flex items-start gap-2 text-sm">
+                            <AlertTriangle className="h-4 w-4 text-destructive flex-shrink-0 mt-0.5" />
+                            <span>{reason}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {upiIdResult.isValid && (
+                    <Alert className="bg-success/10 border-success/20">
+                      <CheckCircle className="h-4 w-4 text-success" />
+                      <AlertTitle className="text-success">Verified</AlertTitle>
+                      <AlertDescription>
+                        This UPI ID follows valid format and uses a recognized bank handle.
+                      </AlertDescription>
+                    </Alert>
                   )}
                 </CardContent>
               </Card>
