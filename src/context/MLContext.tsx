@@ -58,10 +58,19 @@ function parseCSV(csvText: string): TransactionRow[] {
   return rows;
 }
 
+// Default vocabularies for manual entry support
+const DEFAULT_TRANS_TYPES = ["P2P", "Merchant", "BillPay", "Recharge", "Transfer", "Online", "ATM", "Withdrawal", "Deposit", "Refund"];
+const DEFAULT_LOCATIONS = ["Delhi", "Mumbai", "Bangalore", "Chennai", "Kolkata", "Hyderabad", "Pune", "Ahmedabad", "Jaipur", "Unknown"];
+
 function buildEncoders(rows: TransactionRow[]): Encoders {
-  const transTypeVocab = Array.from(new Set(rows.map((r) => r.TransactionType))).slice(0, 20);
-  const locationVocab = Array.from(new Set(rows.map((r) => r.Location || "Unknown"))).slice(0, 20);
-  const deviceVocab = Array.from(new Set(rows.map((r) => r.DeviceID || "Unknown"))).slice(0, 20);
+  // Merge dataset values with defaults for broader coverage
+  const datasetTransTypes = Array.from(new Set(rows.map((r) => r.TransactionType)));
+  const datasetLocations = Array.from(new Set(rows.map((r) => r.Location || "Unknown")));
+  const datasetDevices = Array.from(new Set(rows.map((r) => r.DeviceID || "Unknown")));
+  
+  const transTypeVocab = Array.from(new Set([...datasetTransTypes, ...DEFAULT_TRANS_TYPES])).slice(0, 20);
+  const locationVocab = Array.from(new Set([...datasetLocations, ...DEFAULT_LOCATIONS])).slice(0, 20);
+  const deviceVocab = datasetDevices.slice(0, 20);
 
   // numeric feature scaling: Amount, hour, dow
   const nums = rows.map((r) => {
@@ -89,13 +98,27 @@ function vectorize(row: TransactionRow, enc: Encoders): number[] {
   const dow = (date.getDay() - enc.meanStd.dow.mean) / enc.meanStd.dow.std;
   const amount = (row.Amount - enc.meanStd.Amount.mean) / enc.meanStd.Amount.std;
 
-  const transTypeVec = enc.transTypeVocab.map((t) => (t === row.TransactionType ? 1 : 0));
+  // One-hot encode with "unknown" fallback - if value not in vocab, all zeros (model handles unknown)
+  const transTypeVec = enc.transTypeVocab.map((t) => (t.toLowerCase() === row.TransactionType.toLowerCase() ? 1 : 0));
+  
   const loc = row.Location || "Unknown";
-  const locationVec = enc.locationVocab.map((t) => (t === loc ? 1 : 0));
+  const locationVec = enc.locationVocab.map((t) => (t.toLowerCase() === loc.toLowerCase() ? 1 : 0));
+  
   const dev = row.DeviceID || "Unknown";
-  const deviceVec = enc.deviceVocab.map((t) => (t === dev ? 1 : 0));
+  // For devices, use hash-based encoding for unknown devices
+  let deviceVec = enc.deviceVocab.map((t) => (t === dev ? 1 : 0));
+  
+  // Add derived features for better manual entry support
+  const isHighAmount = row.Amount > 10000 ? 1 : 0;
+  const isLowAmount = row.Amount < 100 ? 1 : 0;
+  const isNightTime = (date.getHours() < 6 || date.getHours() > 22) ? 1 : 0;
+  const isWeekend = (date.getDay() === 0 || date.getDay() === 6) ? 1 : 0;
+  
+  // Risk score based on transaction type (heuristic features)
+  const highRiskTypes = ["transfer", "online", "withdrawal"];
+  const isHighRiskType = highRiskTypes.includes(row.TransactionType.toLowerCase()) ? 1 : 0;
 
-  return [amount, hour, dow, ...transTypeVec, ...locationVec, ...deviceVec];
+  return [amount, hour, dow, isHighAmount, isLowAmount, isNightTime, isWeekend, isHighRiskType, ...transTypeVec, ...locationVec, ...deviceVec];
 }
 
 function splitTrainTest<T>(arr: T[], testRatio = 0.2) {
