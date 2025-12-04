@@ -13,10 +13,10 @@ serve(async (req) => {
   }
 
   try {
-    const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
+    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     
-    if (!GEMINI_API_KEY) {
-      throw new Error('GEMINI_API_KEY is not configured');
+    if (!LOVABLE_API_KEY) {
+      throw new Error('LOVABLE_API_KEY is not configured');
     }
 
     const { message, context = '' } = await req.json();
@@ -46,39 +46,48 @@ Be helpful, concise, and focus on the UPI fraud detection context. If the user a
 
 ${context ? `User context: "${context}"` : ''}`;
 
-    // Prepare the full conversation text for Gemini
-    const fullPrompt = `${systemPrompt}\n\nUser: ${message}\nAssistant:`;
-
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${GEMINI_API_KEY}`, {
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
+        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        contents: [
-          {
-            parts: [
-              {
-                text: fullPrompt
-              }
-            ]
-          }
+        model: 'google/gemini-2.5-flash',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: message }
         ],
-        generationConfig: {
-          maxOutputTokens: 500,
-          temperature: 0.7,
-        }
       }),
     });
 
-    const data = await response.json();
-    
     if (!response.ok) {
-      console.error('Gemini API error:', data);
-      throw new Error(`Gemini API error: ${data.error?.message || 'Unknown error'}`);
+      if (response.status === 429) {
+        return new Response(JSON.stringify({ 
+          error: 'Rate limit exceeded. Please try again in a moment.',
+          success: false 
+        }), {
+          status: 429,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      if (response.status === 402) {
+        return new Response(JSON.stringify({ 
+          error: 'AI credits exhausted. Please add funds to continue.',
+          success: false 
+        }), {
+          status: 402,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+      const errorText = await response.text();
+      console.error('AI Gateway error:', response.status, errorText);
+      throw new Error(`AI Gateway error: ${response.status}`);
     }
 
-    const assistantMessage = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    const data = await response.json();
+    const assistantMessage = data.choices?.[0]?.message?.content;
+    
     console.log('Generated response:', assistantMessage);
 
     return new Response(JSON.stringify({ 
