@@ -20,12 +20,20 @@ export type Encoders = {
   meanStd: { [key: string]: { mean: number; std: number } };
 };
 
+export type ConfusionMatrix = {
+  tp: number;
+  tn: number;
+  fp: number;
+  fn: number;
+};
+
 export type TrainMetrics = {
   accuracy: number;
   precision: number;
   recall: number;
   f1: number;
   modelType?: string;
+  confusionMatrix?: ConfusionMatrix;
 };
 
 interface MLContextType {
@@ -227,7 +235,7 @@ export const MLProvider: React.FC<{ children: React.ReactNode }> = ({ children }
       }
 
       setModel(m);
-      setMetrics({ accuracy, precision, recall, f1, modelType: algo });
+      setMetrics({ accuracy, precision, recall, f1, modelType: algo, confusionMatrix: { tp, tn, fp, fn } });
     } catch (e) {
       console.error(e);
     } finally {

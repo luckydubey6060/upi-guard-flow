@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useML } from "@/context/MLContext";
+import ConfusionMatrix from "@/components/ConfusionMatrix";
 
 const TrainPage: React.FC = () => {
   const { dataset, metrics, isTraining, trainModel, encoders, loadSampleDataset } = useML();
@@ -68,6 +69,18 @@ const TrainPage: React.FC = () => {
                 <p className="text-2xl font-semibold">{(metrics.f1 * 100).toFixed(1)}%</p>
               </li>
             </ul>
+          </CardContent>
+        </Card>
+      )}
+
+      {metrics?.confusionMatrix && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Confusion Matrix</CardTitle>
+            <CardDescription>Visual breakdown of model predictions vs actual labels</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ConfusionMatrix data={metrics.confusionMatrix} />
           </CardContent>
         </Card>
       )}
