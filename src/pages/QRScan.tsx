@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { Camera, Upload, Shield, AlertTriangle, CheckCircle, History, Scan, CreditCard, Info, AtSign } from "lucide-react";
+import { Camera, Upload, Shield, AlertTriangle, CheckCircle, History, Scan, CreditCard, Info, AtSign, ImagePlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -47,6 +47,7 @@ const QRScan = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
   const animationFrameRef = useRef<number | null>(null);
 
   // Fetch recent scan history
@@ -444,22 +445,56 @@ const QRScan = () => {
                   </TabsContent>
 
                   <TabsContent value="upload" className="space-y-4">
-                    <div 
-                      className="border-2 border-dashed border-muted rounded-xl p-12 text-center hover:border-primary/50 transition-colors cursor-pointer"
-                      onClick={() => fileInputRef.current?.click()}
-                    >
-                      <Upload className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+                    <div className="border-2 border-dashed border-muted rounded-xl p-8 text-center">
+                      <ImagePlus className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
                       <p className="text-lg font-medium mb-2">Upload QR Code Image</p>
-                      <p className="text-sm text-muted-foreground mb-4">
-                        PNG, JPG, or JPEG format
+                      <p className="text-sm text-muted-foreground mb-6">
+                        Select from gallery or take a photo
                       </p>
-                      <Button variant="outline">
-                        Choose File
-                      </Button>
+                      
+                      <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                        {/* Gallery/Photo Library Button - Works on mobile */}
+                        <Button 
+                          variant="default" 
+                          size="lg"
+                          onClick={() => galleryInputRef.current?.click()}
+                          className="flex-1 sm:flex-initial"
+                        >
+                          <ImagePlus className="h-4 w-4 mr-2" />
+                          Choose from Gallery
+                        </Button>
+                        
+                        {/* Camera Capture Button - Takes photo directly */}
+                        <Button 
+                          variant="outline" 
+                          size="lg"
+                          onClick={() => fileInputRef.current?.click()}
+                          className="flex-1 sm:flex-initial"
+                        >
+                          <Camera className="h-4 w-4 mr-2" />
+                          Take Photo
+                        </Button>
+                      </div>
+                      
+                      <p className="text-xs text-muted-foreground mt-4">
+                        Supports PNG, JPG, JPEG, HEIC formats
+                      </p>
+                      
+                      {/* Gallery input - opens photo library on mobile */}
+                      <input
+                        ref={galleryInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        className="hidden"
+                      />
+                      
+                      {/* Camera capture input - opens camera directly on mobile */}
                       <input
                         ref={fileInputRef}
                         type="file"
                         accept="image/*"
+                        capture="environment"
                         onChange={handleImageUpload}
                         className="hidden"
                       />
