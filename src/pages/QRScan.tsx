@@ -43,9 +43,11 @@ const QRScan = () => {
   const [upiIdResult, setUpiIdResult] = useState<UPIIDResult | null>(null);
   const [manualUpiId, setManualUpiId] = useState("");
   const [isScanning, setIsScanning] = useState(false);
+  const isScanningRef = useRef(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const animationFrameRef = useRef<number | null>(null);
 
   // Fetch recent scan history
   const { data: scanHistory, refetch: refetchHistory } = useQuery({
@@ -203,23 +205,45 @@ const QRScan = () => {
 
   const startLiveScanning = async () => {
     try {
+      console.log("Requesting camera access...");
       const stream = await navigator.mediaDevices.getUserMedia({ 
         video: { facingMode: "environment" } 
       });
       
+      console.log("Camera stream obtained:", stream);
+      
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        videoRef.current.play();
+        await videoRef.current.play();
         setIsScanning(true);
-        scanQRFromVideo();
+        isScanningRef.current = true;
+        console.log("Video playing, starting QR scan...");
+        requestAnimationFrame(scanQRFromVideo);
       }
     } catch (error) {
-      toast.error("Failed to access camera. Please check permissions.");
       console.error("Camera access error:", error);
+      if (error instanceof Error) {
+        if (error.name === 'NotAllowedError') {
+          toast.error("Camera permission denied. Please allow camera access in your browser settings.");
+        } else if (error.name === 'NotFoundError') {
+          toast.error("No camera found on this device.");
+        } else if (error.name === 'NotSupportedError') {
+          toast.error("Camera not supported. Try using HTTPS or a different browser.");
+        } else {
+          toast.error(`Camera error: ${error.message}`);
+        }
+      } else {
+        toast.error("Failed to access camera. Please check permissions.");
+      }
     }
   };
 
   const stopLiveScanning = () => {
+    isScanningRef.current = false;
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = null;
+    }
     if (videoRef.current && videoRef.current.srcObject) {
       const stream = videoRef.current.srcObject as MediaStream;
       stream.getTracks().forEach(track => track.stop());
@@ -229,7 +253,7 @@ const QRScan = () => {
   };
 
   const scanQRFromVideo = () => {
-    if (!videoRef.current || !canvasRef.current || !isScanning) return;
+    if (!videoRef.current || !canvasRef.current || !isScanningRef.current) return;
 
     const canvas = canvasRef.current;
     const video = videoRef.current;
@@ -250,7 +274,7 @@ const QRScan = () => {
       }
     }
 
-    requestAnimationFrame(scanQRFromVideo);
+    animationFrameRef.current = requestAnimationFrame(scanQRFromVideo);
   };
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
