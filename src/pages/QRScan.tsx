@@ -207,29 +207,80 @@ const QRScan = () => {
   const startLiveScanning = async () => {
     try {
       console.log("Requesting camera access...");
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: "environment" } 
-      });
+      
+      // Check if mediaDevices is available (requires HTTPS on mobile)
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        toast.error("Camera not supported. Please use HTTPS or a modern browser.");
+        return;
+      }
+
+      let stream: MediaStream | null = null;
+      
+      // Try rear camera first (preferred for QR scanning)
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ 
+          video: { 
+            facingMode: { ideal: "environment" },
+            width: { ideal: 1280 },
+            height: { ideal: 720 }
+          },
+          audio: false
+        });
+      } catch (rearError) {
+        console.log("Rear camera failed, trying any camera...", rearError);
+        // Fallback to any available camera
+        stream = await navigator.mediaDevices.getUserMedia({ 
+          video: true,
+          audio: false
+        });
+      }
       
       console.log("Camera stream obtained:", stream);
       
-      if (videoRef.current) {
+      if (videoRef.current && stream) {
         videoRef.current.srcObject = stream;
-        await videoRef.current.play();
-        setIsScanning(true);
-        isScanningRef.current = true;
-        console.log("Video playing, starting QR scan...");
-        requestAnimationFrame(scanQRFromVideo);
+        
+        // Wait for video to be ready before playing
+        videoRef.current.onloadedmetadata = () => {
+          if (videoRef.current) {
+            videoRef.current.play()
+              .then(() => {
+                setIsScanning(true);
+                isScanningRef.current = true;
+                console.log("Video playing, starting QR scan...");
+                requestAnimationFrame(scanQRFromVideo);
+              })
+              .catch((playError) => {
+                console.error("Video play error:", playError);
+                toast.error("Failed to start video. Tap the screen and try again.");
+              });
+          }
+        };
       }
     } catch (error) {
       console.error("Camera access error:", error);
       if (error instanceof Error) {
         if (error.name === 'NotAllowedError') {
-          toast.error("Camera permission denied. Please allow camera access in your browser settings.");
+          toast.error("Camera permission denied. Please allow camera access in your browser/phone settings.");
         } else if (error.name === 'NotFoundError') {
           toast.error("No camera found on this device.");
-        } else if (error.name === 'NotSupportedError') {
-          toast.error("Camera not supported. Try using HTTPS or a different browser.");
+        } else if (error.name === 'NotSupportedError' || error.name === 'NotReadableError') {
+          toast.error("Camera not available. Close other apps using the camera and try again.");
+        } else if (error.name === 'OverconstrainedError') {
+          toast.error("Camera constraints not supported. Trying alternative...");
+          // Last resort: simplest possible camera request
+          try {
+            const fallbackStream = await navigator.mediaDevices.getUserMedia({ video: true });
+            if (videoRef.current && fallbackStream) {
+              videoRef.current.srcObject = fallbackStream;
+              await videoRef.current.play();
+              setIsScanning(true);
+              isScanningRef.current = true;
+              requestAnimationFrame(scanQRFromVideo);
+            }
+          } catch {
+            toast.error("Camera not accessible. Please check permissions.");
+          }
         } else {
           toast.error(`Camera error: ${error.message}`);
         }
