@@ -36,9 +36,16 @@ export type TrainMetrics = {
   confusionMatrix?: ConfusionMatrix;
 };
 
+export type DatasetLoadResult = {
+  success: boolean;
+  rowCount: number;
+  labeledCount: number;
+  errors: string[];
+};
+
 interface MLContextType {
   dataset: TransactionRow[];
-  setDatasetFromCSV: (csvText: string) => Promise<void>;
+  setDatasetFromCSV: (csvText: string) => Promise<DatasetLoadResult>;
   loadSampleDataset: () => Promise<void>;
   preview: TransactionRow[];
   encoders?: Encoders;
@@ -51,19 +58,80 @@ interface MLContextType {
 
 const MLContext = createContext<MLContextType | undefined>(undefined);
 
-function parseCSV(csvText: string): TransactionRow[] {
+function parseCSV(csvText: string): { rows: TransactionRow[]; errors: string[] } {
   const parsed = Papa.parse(csvText, { header: true, skipEmptyLines: true });
-  const rows: TransactionRow[] = (parsed.data as Papa.ParseResult<TransactionRow>["data"]).map((r: any) => ({
-    TransactionID: r.TransactionID ?? r.transactionid ?? r.id,
-    UserID: r.UserID ?? r.userid,
-    Amount: Number(r.Amount ?? r.amount ?? 0),
-    Timestamp: r.Timestamp ?? r.timestamp,
-    Location: r.Location ?? r.location,
-    DeviceID: r.DeviceID ?? r.deviceid,
-    TransactionType: r.TransactionType ?? r.transactiontype,
-    FraudLabel: r.FraudLabel !== undefined ? Number(r.FraudLabel) : r.fraudlabel !== undefined ? Number(r.fraudlabel) : undefined,
-  })).filter((r) => !!r.Timestamp && !!r.TransactionType);
-  return rows;
+  const errors: string[] = [];
+  
+  if (parsed.errors.length > 0) {
+    errors.push(`CSV parsing errors: ${parsed.errors.map(e => e.message).join(', ')}`);
+  }
+  
+  const data = parsed.data as any[];
+  if (data.length === 0) {
+    errors.push("No data rows found in CSV");
+    return { rows: [], errors };
+  }
+  
+  // Get column names (case-insensitive matching)
+  const firstRow = data[0];
+  const columns = Object.keys(firstRow);
+  const findColumn = (names: string[]): string | undefined => {
+    for (const name of names) {
+      const found = columns.find(c => c.toLowerCase().trim() === name.toLowerCase());
+      if (found) return found;
+    }
+    return undefined;
+  };
+  
+  const amountCol = findColumn(['amount', 'amt', 'value', 'transaction_amount']);
+  const timestampCol = findColumn(['timestamp', 'time', 'date', 'datetime', 'transaction_time', 'transaction_date']);
+  const typeCol = findColumn(['transactiontype', 'transaction_type', 'type', 'txn_type']);
+  const fraudCol = findColumn(['fraudlabel', 'fraud_label', 'fraud', 'is_fraud', 'label', 'target']);
+  const idCol = findColumn(['transactionid', 'transaction_id', 'id', 'txn_id']);
+  const userCol = findColumn(['userid', 'user_id', 'user', 'customer_id']);
+  const locationCol = findColumn(['location', 'loc', 'city', 'place']);
+  const deviceCol = findColumn(['deviceid', 'device_id', 'device']);
+  
+  // Validate required columns
+  if (!amountCol) errors.push("Missing 'Amount' column");
+  if (!timestampCol) errors.push("Missing 'Timestamp' column");
+  if (!typeCol) errors.push("Missing 'TransactionType' column");
+  
+  if (!amountCol || !timestampCol || !typeCol) {
+    errors.push(`Found columns: ${columns.join(', ')}`);
+    return { rows: [], errors };
+  }
+  
+  const rows: TransactionRow[] = data.map((r: any, index: number) => {
+    const amount = Number(r[amountCol!] ?? 0);
+    const timestamp = r[timestampCol!];
+    const transType = r[typeCol!];
+    
+    if (!timestamp || !transType) {
+      return null;
+    }
+    
+    return {
+      TransactionID: idCol ? r[idCol] : `row_${index}`,
+      UserID: userCol ? r[userCol] : undefined,
+      Amount: isNaN(amount) ? 0 : amount,
+      Timestamp: timestamp,
+      Location: locationCol ? r[locationCol] : undefined,
+      DeviceID: deviceCol ? r[deviceCol] : undefined,
+      TransactionType: transType,
+      FraudLabel: fraudCol && r[fraudCol] !== undefined && r[fraudCol] !== '' 
+        ? Number(r[fraudCol]) 
+        : undefined,
+    };
+  }).filter((r): r is NonNullable<typeof r> => r !== null) as TransactionRow[];
+  
+  if (!fraudCol) {
+    errors.push("Warning: No 'FraudLabel' column found. You can still train if labels exist.");
+  }
+  
+  console.log(`Parsed ${rows.length} rows from CSV. Labeled rows: ${rows.filter(r => r.FraudLabel !== undefined).length}`);
+  
+  return { rows, errors };
 }
 
 // Default vocabularies for manual entry support
@@ -143,11 +211,22 @@ export const MLProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   const [isTraining, setIsTraining] = useState(false);
   const [metrics, setMetrics] = useState<TrainMetrics>();
 
-  const setDatasetFromCSV = useCallback(async (csvText: string) => {
-    const rows = parseCSV(csvText);
+  const setDatasetFromCSV = useCallback(async (csvText: string): Promise<{ success: boolean; rowCount: number; labeledCount: number; errors: string[] }> => {
+    const { rows, errors } = parseCSV(csvText);
+    
+    if (rows.length === 0) {
+      return { success: false, rowCount: 0, labeledCount: 0, errors };
+    }
+    
+    const labeledCount = rows.filter(r => r.FraudLabel !== undefined).length;
+    
     setDataset(rows);
     setPreview(rows.slice(0, 10));
     setEncoders(buildEncoders(rows));
+    setModel(undefined); // Clear previous model when new data is loaded
+    setMetrics(undefined); // Clear previous metrics
+    
+    return { success: true, rowCount: rows.length, labeledCount, errors };
   }, []);
 
   const loadSampleDataset = useCallback(async () => {
